@@ -1,0 +1,20 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  \
+"../../../../gsom.srcs/sources_1/imports/gsom/euclidean_distance.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/fpa_adder.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/fpa_comparator.v" \
+"../../../../gsom.srcs/sources_1/imports/new/fpa_distance.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/fpa_multiplier.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/grow_node_in_middle.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/grow_node_on_one_side.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/gsom.v" \
+"../../../../gsom.srcs/sources_1/imports/new/gsom_learning_rate.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/node.v" \
+"../../../../gsom.srcs/sources_1/imports/gsom/update_bmu.v" \
+"../../../../gsom.srcs/sim_1/imports/new/gsom_tb.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

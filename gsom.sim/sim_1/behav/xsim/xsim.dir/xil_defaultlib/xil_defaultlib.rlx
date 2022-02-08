@@ -1,0 +1,17 @@
+0.7
+2020.2
+Nov 18 2020
+09:20:35
+/home/aari/Projects/Vivado/gsom/gsom.sim/sim_1/behav/xsim/glbl.v,1605673889,verilog,,,,glbl,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sim_1/imports/new/gsom_tb.v,1643960272,verilog,,,,gsom_tb,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/euclidean_distance.v,1643981725,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/fpa_adder.v,,euclidean_distance,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/fpa_adder.v,1643960145,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/fpa_comparator.v,,fpa_adder,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/fpa_comparator.v,1643960196,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/new/fpa_distance.v,,fpa_comparator,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/fpa_multiplier.v,1643960156,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/grow_node_in_middle.v,,fpa_multiplier,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/grow_node_in_middle.v,1644051393,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/grow_node_on_one_side.v,,grow_node_in_middle,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/grow_node_on_one_side.v,1643960218,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/gsom.v,,grow_node_on_one_side,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/gsom.v,1644165469,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/new/gsom_learning_rate.v,,gsom,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/node.v,1644058365,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/update_bmu.v,,node,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/update_bmu.v,1643960174,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sim_1/imports/new/gsom_tb.v,,update_bmu,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/new/fpa_distance.v,1643978759,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/fpa_multiplier.v,,fpa_distance,,,,,,,,
+/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/new/gsom_learning_rate.v,1643960242,verilog,,/home/aari/Projects/Vivado/gsom/gsom.srcs/sources_1/imports/gsom/node.v,,gsom_learning_rate,,,,,,,,
