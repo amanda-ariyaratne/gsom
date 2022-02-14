@@ -1,0 +1,225 @@
+#-----------------------------------------------------------
+# Vivado v2020.2 (64-bit)
+# SW Build 3064766 on Wed Nov 18 09:12:47 MST 2020
+# IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+# Start of session at: Thu Feb 10 17:10:58 2022
+# Process ID: 18085
+# Current directory: /home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1
+# Command line: vivado -log divider.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source divider.tcl
+# Log file: /home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/divider.vds
+# Journal file: /home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/vivado.jou
+#-----------------------------------------------------------
+source divider.tcl -notrace
+Command: synth_design -top divider -part xc7a35tcpg236-1 -mode out_of_context
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a35t'
+INFO: [Device 21-403] Loading part xc7a35tcpg236-1
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 4 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 18144
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:05 ; elapsed = 00:00:09 . Memory (MB): peak = 2353.168 ; gain = 0.000 ; free physical = 2098 ; free virtual = 18633
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'divider' [/home/aari/Projects/Vivado/gsom/gsom.gen/sources_1/ip/divider/synth/divider.v:60]
+INFO: [Synth 8-6157] synthesizing module 'LUT1' [/opt/Xilinx/Vivado/2020.2/scripts/rt/data/unisim_comp.v:39137]
+INFO: [Synth 8-6155] done synthesizing module 'LUT1' (1#1) [/opt/Xilinx/Vivado/2020.2/scripts/rt/data/unisim_comp.v:39137]
+INFO: [Synth 8-6155] done synthesizing module 'divider' (17#1) [/home/aari/Projects/Vivado/gsom/gsom.gen/sources_1/ip/divider/synth/divider.v:60]
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:09 ; elapsed = 00:00:16 . Memory (MB): peak = 2360.090 ; gain = 6.922 ; free physical = 2106 ; free virtual = 18659
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:10 ; elapsed = 00:00:17 . Memory (MB): peak = 2374.934 ; gain = 21.766 ; free physical = 2099 ; free virtual = 18655
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:10 ; elapsed = 00:00:17 . Memory (MB): peak = 2374.934 ; gain = 21.766 ; free physical = 2099 ; free virtual = 18655
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00.08 ; elapsed = 00:00:00.08 . Memory (MB): peak = 2382.871 ; gain = 0.000 ; free physical = 2091 ; free virtual = 18647
+INFO: [Netlist 29-17] Analyzing 1342 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [/home/aari/Projects/Vivado/gsom/gsom.gen/sources_1/ip/divider/divider_ooc.xdc] for cell 'inst'
+Finished Parsing XDC File [/home/aari/Projects/Vivado/gsom/gsom.gen/sources_1/ip/divider/divider_ooc.xdc] for cell 'inst'
+Parsing XDC File [/home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/dont_touch.xdc]
+Finished Parsing XDC File [/home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/dont_touch.xdc]
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 2538.715 ; gain = 0.000 ; free physical = 1996 ; free virtual = 18566
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1 instances were transformed.
+  FDE => FDRE: 1 instance 
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00.14 ; elapsed = 00:00:00.06 . Memory (MB): peak = 2538.715 ; gain = 0.000 ; free physical = 1996 ; free virtual = 18566
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:16 ; elapsed = 00:00:24 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 2064 ; free virtual = 18635
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a35tcpg236-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:16 ; elapsed = 00:00:24 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 2064 ; free virtual = 18635
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+Applied set_property KEEP_HIERARCHY = SOFT for inst. (constraint file  /home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/dont_touch.xdc, line 9).
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:24 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 2064 ; free virtual = 18635
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:25 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 2053 ; free virtual = 18627
+---------------------------------------------------------------------------------
+INFO: [Synth 8-223] decloning instance 'inst/i_synth/DIV_OP.SPD.OP/ROUND/EXTRA_LSB_BIT_DEL' (delay__parameterized22) to 'inst/i_synth/DIV_OP.SPD.OP/ROUND/EXTRA_LSB_RND1_DEL'
+INFO: [Synth 8-223] decloning instance 'inst/i_synth/DIV_OP.SPD.OP/ROUND/EXP_INC_DELAY' (delay__parameterized22) to 'inst/i_synth/DIV_OP.SPD.OP/ROUND/EXP_INC_RND1_DELAY'
+INFO: [Synth 8-223] decloning instance 'inst/i_synth/DELAY_ACCUM_OVERFLOW' (delay__parameterized22) to 'inst/i_synth/DELAY_ACCUM_INPUT_OVERFLOW'
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 90 (col length:60)
+BRAMs: 100 (col length: RAMB18 60 RAMB36 30)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:19 ; elapsed = 00:00:27 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 2032 ; free virtual = 18615
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:25 ; elapsed = 00:00:33 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1916 ; free virtual = 18506
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:25 ; elapsed = 00:00:34 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1910 ; free virtual = 18501
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:26 ; elapsed = 00:00:34 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1909 ; free virtual = 18499
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:29 ; elapsed = 00:00:37 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:29 ; elapsed = 00:00:37 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:29 ; elapsed = 00:00:37 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:29 ; elapsed = 00:00:37 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:29 ; elapsed = 00:00:38 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:29 ; elapsed = 00:00:38 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+--------+------+
+|      |Cell    |Count |
++------+--------+------+
+|1     |CARRY4  |     3|
+|2     |LUT1    |     2|
+|3     |LUT2    |   148|
+|4     |LUT3    |   650|
+|5     |LUT4    |    11|
+|6     |LUT5    |    18|
+|7     |LUT6    |    17|
+|8     |MUXCY   |   658|
+|9     |SRL16E  |    15|
+|10    |SRLC32E |    22|
+|11    |XORCY   |   683|
+|12    |FDE     |     1|
+|13    |FDRE    |  1520|
++------+--------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:29 ; elapsed = 00:00:38 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1907 ; free virtual = 18498
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 0 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:26 ; elapsed = 00:00:35 . Memory (MB): peak = 2538.715 ; gain = 21.766 ; free physical = 1960 ; free virtual = 18551
+Synthesis Optimization Complete : Time (s): cpu = 00:00:29 ; elapsed = 00:00:38 . Memory (MB): peak = 2538.715 ; gain = 185.547 ; free physical = 1960 ; free virtual = 18551
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00.05 ; elapsed = 00:00:00.05 . Memory (MB): peak = 2538.715 ; gain = 0.000 ; free physical = 2039 ; free virtual = 18633
+INFO: [Netlist 29-17] Analyzing 1345 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:00 . Memory (MB): peak = 2538.715 ; gain = 0.000 ; free physical = 1973 ; free virtual = 18567
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 192 instances were transformed.
+  (MUXCY,XORCY) => CARRY4: 191 instances
+  FDE => FDRE: 1 instance 
+
+INFO: [Common 17-83] Releasing license: Synthesis
+23 Infos, 0 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:39 ; elapsed = 00:00:43 . Memory (MB): peak = 2538.715 ; gain = 185.625 ; free physical = 2116 ; free virtual = 18711
+INFO: [Common 17-1381] The checkpoint '/home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/divider.dcp' has been generated.
+WARNING: [Common 17-576] 'use_project_ipc' is deprecated. This option is deprecated and no longer used.
+INFO: [Coretcl 2-1648] Added synthesis output to IP cache for IP divider, cache-ID = 2b75aed11ecb6fe0
+INFO: [Coretcl 2-1174] Renamed 226 cell refs.
+INFO: [Common 17-1381] The checkpoint '/home/aari/Projects/Vivado/gsom/gsom.runs/divider_synth_1/divider.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file divider_utilization_synth.rpt -pb divider_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Thu Feb 10 17:11:57 2022...

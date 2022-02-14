@@ -1,0 +1,2 @@
+comparator_sim_netlist.v,verilog,xil_defaultlib,../../../../gsom.gen/sources_1/ip/comparator/comparator_sim_netlist.v,
+glbl.v,Verilog,xil_defaultlib,glbl.v

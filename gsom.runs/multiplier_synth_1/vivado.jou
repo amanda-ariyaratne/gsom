@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2020.2 (64-bit)
+# SW Build 3064766 on Wed Nov 18 09:12:47 MST 2020
+# IP Build 3064653 on Wed Nov 18 14:17:31 MST 2020
+# Start of session at: Wed Feb  9 22:25:39 2022
+# Process ID: 54171
+# Current directory: /home/aari/Projects/Vivado/gsom/gsom.runs/multiplier_synth_1
+# Command line: vivado -log multiplier.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source multiplier.tcl
+# Log file: /home/aari/Projects/Vivado/gsom/gsom.runs/multiplier_synth_1/multiplier.vds
+# Journal file: /home/aari/Projects/Vivado/gsom/gsom.runs/multiplier_synth_1/vivado.jou
+#-----------------------------------------------------------
+source multiplier.tcl -notrace

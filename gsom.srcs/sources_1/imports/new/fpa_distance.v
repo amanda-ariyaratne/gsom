@@ -1,4 +1,4 @@
-`timescale  1 ps / 1 ps
+`timescale  1 ns / 1 ps
 module fpa_distance
 #(
     parameter DIM=11,
@@ -40,6 +40,29 @@ fpa_adder subtraction_unit(
     .is_done(subtraction_done)
 );
 
+//reg adder1_a_tvalid;
+//wire adder1_a_tready;
+//reg [DIGIT_DIM-1:0] adder1_a_tdata;
+//reg adder1_b_tvalid;
+//wire adder1_b_tready;
+//reg [DIGIT_DIM-1:0] adder1_b_tdata;
+//wire adder1_result_tvalid;
+//reg adder1_result_tready;
+//wire [DIGIT_DIM-1:0] adder1_result_tdata;
+
+//adder adder1(
+//  .aclk(clk),
+//  .s_axis_a_tvalid(adder1_a_tvalid),
+//  .s_axis_a_tready(adder1_a_tready),
+//  .s_axis_a_tdata(adder1_a_tdata),
+//  .s_axis_b_tvalid(adder1_b_tvalid),
+//  .s_axis_b_tready(adder1_b_tready),
+//  .s_axis_b_tdata(adder1_b_tdata),
+//  .m_axis_result_tvalid(adder1_result_tvalid),
+//  .m_axis_result_tready(adder1_result_tready),
+//  .m_axis_result_tdata(adder1_result_tdata)
+//);
+
 fpa_multiplier square_unit(
     .clk(clk),
     .en(squrae_en),
@@ -58,6 +81,14 @@ always @(posedge clk or posedge reset) begin
         
     end else begin 
         if (en && init) begin
+            
+//            adder1_a_tdata = num1;
+//            adder1_b_tdata = num2;
+//            if (~adder1_b_tvalid) adder1_b_tdata[DIGIT_DIM-1] = ~adder1_b_tdata[DIGIT_DIM-1];
+//            adder1_a_tvalid = 1;
+//            adder1_b_tvalid = 1;
+//            adder1_result_tready = 1;
+        
             sub_in_1 = num1;
             sub_in_2 = num2;
             sub_in_2[DIGIT_DIM-1] = ~sub_in_2[DIGIT_DIM-1]; // flip the sign bit
@@ -67,6 +98,9 @@ always @(posedge clk or posedge reset) begin
         end
         
         if (subtraction_done && !squrae_en) begin
+//            adder1_a_tvalid = 1;
+//            adder1_b_tvalid = 1;
+//            adder1_result_tready = 1;
             sub_en=0;
             sub_reset=1;
             

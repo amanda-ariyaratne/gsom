@@ -2,15 +2,13 @@
  LR(t +1) = alpha * psi(n) * LR(t)
  n = node count
 
- psi(n) = 1 -     R
-              -----------
-              2^(n/8 + 2)
+ psi(n) = 1 -  R
+              ----
+               n
 ***************************************/
-`timescale  1 ps / 1 ps
+`timescale  1 ns / 1 ps
 module gsom_learning_rate
 #(
-    parameter R = 32'h40733333, // 3.8
-    parameter R_EXP = 32'h3F800000, // 1
     parameter DIGIT_DIM = 32
 )
 (
@@ -24,68 +22,100 @@ module gsom_learning_rate
     output wire is_done
 );
 
-reg mul_en = 0;
-reg mul_reset = 0;
-reg [DIGIT_DIM-1:0] mul_num1;
-reg [DIGIT_DIM-1:0] mul_num2;
-wire [DIGIT_DIM-1:0] mul_num_out;
-wire mul_is_done;    
-fpa_multiplier multiplier(
-    .clk(clk),
-    .en(mul_en),
-    .reset(mul_reset),
-    .num1(mul_num1),
-    .num2(mul_num2),
-    .num_out(mul_num_out),
-    .is_done(mul_is_done)
+reg [DIGIT_DIM-1:0] R = 32'h40733333;
+
+reg divider1_a_tvalid;
+wire divider1_a_tready;
+reg [DIGIT_DIM-1:0] divider1_a_tdata;
+reg divider1_b_tvalid;
+wire divider1_b_tready;
+reg [DIGIT_DIM-1:0] divider1_b_tdata;
+wire divider1_result_tvalid;
+reg divider1_result_tready;
+wire [DIGIT_DIM-1:0] divider1_result_tdata;
+
+
+divider divider1(
+  .aclk(clk),
+  .s_axis_a_tvalid(divider1_a_tvalid),
+  .s_axis_a_tready(divider1_a_tready),
+  .s_axis_a_tdata(divider1_a_tdata),
+  .s_axis_b_tvalid(divider1_b_tvalid),
+  .s_axis_b_tready(divider1_b_tready),
+  .s_axis_b_tdata(divider1_b_tdata),
+  .m_axis_result_tvalid(divider1_result_tvalid),
+  .m_axis_result_tready(divider1_result_tready),
+  .m_axis_result_tdata(divider1_result_tdata)
 );
 
-reg mul1_en = 0;
-reg mul1_reset = 0;
-reg [DIGIT_DIM-1:0] mul1_num1;
-reg [DIGIT_DIM-1:0] mul1_num2;
-wire [DIGIT_DIM-1:0] mul1_num_out;
-wire mul1_is_done;    
-fpa_multiplier multiplier1(
-    .clk(clk),
-    .en(mul1_en),
-    .reset(mul1_reset),
-    .num1(mul1_num1),
-    .num2(mul1_num2),
-    .num_out(mul1_num_out),
-    .is_done(mul1_is_done)
+reg adder1_a_tvalid;
+wire adder1_a_tready;
+reg [DIGIT_DIM-1:0] adder1_a_tdata;
+reg adder1_b_tvalid;
+wire adder1_b_tready;
+reg [DIGIT_DIM-1:0] adder1_b_tdata;
+wire adder1_result_tvalid;
+reg adder1_result_tready;
+wire [DIGIT_DIM-1:0] adder1_result_tdata;
+
+adder adder1(
+  .aclk(clk),
+  .s_axis_a_tvalid(adder1_a_tvalid),
+  .s_axis_a_tready(adder1_a_tready),
+  .s_axis_a_tdata(adder1_a_tdata),
+  .s_axis_b_tvalid(adder1_b_tvalid),
+  .s_axis_b_tready(adder1_b_tready),
+  .s_axis_b_tdata(adder1_b_tdata),
+  .m_axis_result_tvalid(adder1_result_tvalid),
+  .m_axis_result_tready(adder1_result_tready),
+  .m_axis_result_tdata(adder1_result_tdata)
 );
 
-reg add_en = 0;
-reg add_reset = 0;
-reg [DIGIT_DIM-1:0] add_num1;
-reg [DIGIT_DIM-1:0] add_num2;
-wire [DIGIT_DIM-1:0] add_num_out;
-wire add_is_done; 
-fpa_adder adder(
-    .clk(clk),
-    .en(add_en),
-    .reset(add_reset),
-    .num1(add_num1),
-    .num2(add_num2),
-    .num_out(add_num_out),
-    .is_done(add_is_done)
+reg multiplier1_a_tvalid;
+wire multiplier1_a_tready;
+reg [DIGIT_DIM-1:0] multiplier1_a_tdata;
+reg multiplier1_b_tvalid;
+wire multiplier1_b_tready;
+reg [DIGIT_DIM-1:0] multiplier1_b_tdata;
+reg multiplier1_result_tready;
+wire multiplier1_result_tvalid;
+wire [DIGIT_DIM-1:0] multiplier1_result_tdata;
+
+multiplier multiplier1(
+  .aclk(clk),
+  .s_axis_a_tvalid(multiplier1_a_tvalid),
+  .s_axis_a_tready(multiplier1_a_tready),
+  .s_axis_a_tdata(prev_learning_rate),
+  .s_axis_b_tvalid(multiplier1_b_tvalid),
+  .s_axis_b_tready(multiplier1_b_tready),
+  .s_axis_b_tdata(alpha),
+  .m_axis_result_tvalid(multiplier1_result_tvalid),
+  .m_axis_result_tready(multiplier1_result_tready),
+  .m_axis_result_tdata(multiplier1_result_tdata)
 );
 
-reg add1_en = 0;
-reg add1_reset = 0;
-reg [DIGIT_DIM-1:0] add1_num1;
-reg [DIGIT_DIM-1:0] add1_num2;
-wire [DIGIT_DIM-1:0] add1_num_out;
-wire add1_is_done; 
-fpa_adder adder1(
-    .clk(clk),
-    .en(add1_en),
-    .reset(add1_reset),
-    .num1(add1_num1),
-    .num2(add1_num2),
-    .num_out(add1_num_out),
-    .is_done(add1_is_done)
+
+reg multiplier2_a_tvalid;
+wire multiplier2_a_tready;
+reg [DIGIT_DIM-1:0] multiplier2_a_tdata;
+reg multiplier2_b_tvalid;
+wire multiplier2_b_tready;
+reg [DIGIT_DIM-1:0] multiplier2_b_tdata;
+reg multiplier2_result_tready;
+wire multiplier2_result_tvalid;
+wire [DIGIT_DIM-1:0] multiplier2_result_tdata;
+
+multiplier multiplier2(
+  .aclk(clk),
+  .s_axis_a_tvalid(multiplier2_a_tvalid),
+  .s_axis_a_tready(multiplier2_a_tready),
+  .s_axis_a_tdata(multiplier1_result_tdata),
+  .s_axis_b_tvalid(multiplier2_b_tvalid),
+  .s_axis_b_tready(multiplier2_b_tready),
+  .s_axis_b_tdata(adder1_result_tdata),
+  .m_axis_result_tvalid(multiplier2_result_tvalid),
+  .m_axis_result_tready(multiplier2_result_tready),
+  .m_axis_result_tdata(multiplier2_result_tdata)
 );
 
 reg [DIGIT_DIM-1:0] out;
@@ -105,99 +135,67 @@ always @(posedge clk or posedge reset) begin
         init = 1;
         
     end else if (en && init) begin
-        /*************
-        2^(n/8 + 2)
-        **************/  
         out = 0;
         
-        add_num1 = 32'h40000000; // 2
-        add_num2[31] = 0;
-        add_num2[30:23] = node_count[30:23] - 3;
-        add_num2[22:0] = node_count[22:0];
+        divider1_a_tdata = R;
+        divider1_b_tdata = node_count;
+        divider1_a_tvalid = 1;
+        divider1_b_tvalid = 1;
+        divider1_result_tready = 1;
         
-        add_en = 1;
-        add_reset = 0;
-        
-        // prev lr * alpha
-        mul_num1 = prev_learning_rate;
-        mul_num2 = alpha;
-        
-        mul_en = 1;
-        mul_reset = 0;
+        multiplier1_a_tdata = alpha;
+        multiplier1_b_tdata = prev_learning_rate;
+        multiplier1_a_tvalid = 1;
+        multiplier1_b_tvalid = 1;
+        multiplier1_result_tready = 1;
         
         init = 0; 
-        step_4 = 1;  
-//        step_1 = 1;  
+        step_1 = 1; 
         
-    end else if (en && step_1 && add_is_done) begin
-        
-        /**************************************
-              R
-          -----------
-          2^(n/8 + 2)  
-        ***************************************/
-//        $display("1 %h", add_num_out);
-        add_en = 0;
-        add_reset = 1;
+    end else if (en && step_1 && divider1_result_tvalid) begin
                 
-        add1_num1 = R;
-        add1_num2 = add_num_out;
-        add1_num2[31] = 1;
-        
-        add1_en = 1;
-        add1_reset = 0;
+        adder1_a_tdata = 32'h3F800000;
+        adder1_b_tdata = divider1_result_tdata;
+        adder1_b_tdata[DIGIT_DIM-1] = ~adder1_b_tdata;
+        adder1_a_tvalid = 1;
+        adder1_b_tvalid = 1;
+        adder1_result_tready = 1;
         
         step_1 = 0; 
         step_2 = 1;   
-           
-    end else if (step_2 && add1_is_done) begin
-//        $display("2 %h", add1_num_out);
-        add1_en = 0;
-        add1_reset = 1;   
-             
-        add_num1 = 32'h3F800000;    // 1
-        add_num2[31] = 1;
-        add_num2[22:0] = R[22:0];
         
-        shift_count = add1_num_out[30:23]-127;
-        if (shift_count > 0)
-            add_num2[30:23] = add1_num_out[22:0] >> (23 - shift_count);    
-        else
-            add_num2[30:23] = 0;
-        add_num2[30:23] = add_num2[30:23] + 127;
+        divider1_a_tvalid = 0;
+        divider1_b_tvalid = 0;
+        divider1_result_tready = 0;
+           
+    end else if (en && step_2 && multiplier1_result_tvalid && adder1_result_tvalid) begin
 
-        add_en = 1;
-        add_reset = 0;
+        multiplier2_a_tdata = multiplier1_result_tdata;
+        multiplier2_b_tdata = adder1_result_tdata;
+        multiplier2_a_tvalid = 1;
+        multiplier2_b_tvalid = 1;
+        multiplier2_result_tready = 1;
         
         step_2 = 0;
         step_3 = 1;
         
-    end else if (step_3 && add_is_done && mul_is_done) begin
-//        $display("3 %h", mul_num_out);
-//        $display("4 %h", add_num_out);
+        adder1_a_tvalid = 0;
+        adder1_b_tvalid = 0;
+        adder1_result_tready = 0;
         
-        add_en = 0;
-        add_reset = 1;        
+        multiplier1_a_tvalid = 0;
+        multiplier1_b_tvalid = 0;
+        multiplier1_result_tready = 0;
         
-        mul_en = 0;
-        mul_reset = 1;
-        
-        mul1_num1 = mul_num_out;
-        mul1_num2 = add_num_out;
-        mul1_en = 1;
-        mul1_reset = 0;
-        
-        step_3 = 0;
-        step_4 = 1;
-    end else if (step_4 && mul_is_done) begin
-//        $display("4 %h", mul_num_out);
-        mul_en = 0;
-        mul_reset = 1;
-        
+    end else if (step_3 && multiplier2_result_tvalid) begin
         done = 1;
-        out = mul_num_out;
+        out = multiplier2_result_tdata;
+        step_3 = 0;
         
-        step_4 = 0;
+        multiplier2_a_tvalid = 0;
+        multiplier2_b_tvalid = 0;
+        multiplier2_result_tready = 0;
+        
     end
 end
 

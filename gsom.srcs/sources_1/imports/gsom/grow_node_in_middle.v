@@ -16,47 +16,32 @@ module grow_node_in_middle
 reg done = 0;
 reg init = 1;
 reg [DIGIT_DIM-1:0] out;
-reg add_en = 0;
-reg add_reset = 0;
-wire [DIGIT_DIM-1:0] add_out;
-wire add_is_done; 
 
-fpa_adder adder(
-    .clk(clk),
-    .en(add_en),
-    .reset(add_reset),
-    .num1(winner),
-    .num2(node_next),
-    .num_out(add_out),
-    .is_done(add_is_done)
-);
+reg [DIGIT_DIM-1:0] winner_in;
+reg winner_in_valid = 0;
+wire winner_in_ready;
 
-reg comp_en=0;
-reg comp_reset=0;
-reg [DIGIT_DIM-1:0] comp_in;
-wire [1:0] comp_out_max;
-wire [1:0] comp_out_min;
-wire comp_done_max;
-wire comp_done_min;
+reg [DIGIT_DIM-1:0] node_next_in;
+reg node_next_in_valid = 0;
+wire node_next_in_ready;
 
-fpa_comparator get_max(
-    .clk(clk),
-    .en(comp_en),
-    .reset(comp_reset),
-    .num1(32'h3F800000), //1
-    .num2(comp_in),
-    .num_out(comp_out_max),
-    .is_done(comp_done_max)
-);
+wire [DIGIT_DIM-1:0] new_weight_out;
+reg new_weight_out_ready = 0;
+wire new_weight_out_valid;
 
-fpa_comparator get_min(
-    .clk(clk),
-    .en(comp_en),
-    .reset(comp_reset),
-    .num1(comp_in), //0
-    .num2(32'h00000000),
-    .num_out(comp_out_min),
-    .is_done(comp_done_min)
+adder fpa_node_count_adder(
+    .aclk(clk),
+    .s_axis_a_tvalid(winner_in_valid),
+    .s_axis_a_tready(winner_in_ready),
+    .s_axis_a_tdata(winner_in),
+    
+    .s_axis_b_tvalid(node_next_in_valid),
+    .s_axis_b_tready(node_next_in_ready),
+    .s_axis_b_tdata(node_next_in),
+    
+    .m_axis_result_tvalid(new_weight_out_valid),
+    .m_axis_result_tready(new_weight_out_ready),
+    .m_axis_result_tdata(new_weight_out)
 );
 
 always @(posedge clk or posedge reset) begin
@@ -64,31 +49,21 @@ always @(posedge clk or posedge reset) begin
         done = 0;
         init = 1;
         
-    end else begin    
-        if (en && init) begin
-            add_en=1;
-            add_reset=0;
-            init=0;
-        end
-        if (en && add_is_done) begin
-            add_en=0;
-            add_reset=1;
+    end else if (en) begin    
+        if (init) begin
+            winner_in_valid = 1;
+            node_next_in_valid = 1;
+            new_weight_out_ready = 1;
+            init = 0;
             
-            comp_en = 1;
-            comp_reset = 0;
-            comp_in = add_out;
-            comp_in[30:23] = add_out[30:23]-1;
-        end
-        if (en && comp_done_max && comp_done_min) begin
-            comp_en=0;
-            comp_reset=1;
-            out = comp_in;
+        end else if (new_weight_out_valid) begin
+            out = new_weight_out;
+            out[30:23] = new_weight_out[30:23]-1;
             done = 1;
-            if (comp_out_max==2)
-                out = 32'h3F800000;
-            if (comp_out_min==2) // 0 is max
-                out = 32'h00000000;
-                
+            winner_in_valid = 0;
+            node_next_in_valid = 0;
+            new_weight_out_ready = 0;
+            
         end
     end
 end

@@ -1,9 +1,9 @@
-`timescale  1 ps / 1 ps
+`timescale  1 ns / 1 ps
 module node #(
-    parameter DIM=11,
+    parameter DIM=4,
     parameter DIGIT_DIM=32,
-    parameter LOG2_MAX_ROWS=4,
-    parameter LOG2_MAX_COLS=4,
+    parameter LOG2_MAX_ROWS=6,
+    parameter LOG2_MAX_COLS=6,
     parameter CS_COUNT = 6
 ) (
     input clk,
@@ -96,52 +96,82 @@ generate
 endgenerate
 
 ///////////////////////////////////////////**************************update_node_error_spreading**************************/////////////////////////////////////////////////////
-reg update_error_en = 0;
-reg update_error_reset = 0;
-wire [DIGIT_DIM-1:0] updated_error;
-wire update_error_done;
+reg update_error1_valid = 0;
+wire update_error1_ready;
 
-fpa_multiplier update_error(
-    .clk(clk),
-    .en(update_error_en),
-    .reset(update_error_reset),
-    .num1(error),
-    .num2(FD),
-    .num_out(updated_error),
-    .is_done(update_error_done)
+reg update_error2_valid = 0;
+wire update_error2_ready;
+
+wire [DIGIT_DIM-1:0] update_error_out;
+reg update_error_out_ready = 0;
+wire update_error_out_valid;
+
+multiplier fpa_multiplier(
+    .aclk(clk),
+    .s_axis_a_tvalid(update_error1_valid),
+    .s_axis_a_tready(update_error1_ready),
+    .s_axis_a_tdata(error),
+    
+    .s_axis_b_tvalid(update_error2_valid),
+    .s_axis_b_tready(update_error2_ready),
+    .s_axis_b_tdata(FD),
+    
+    .m_axis_result_tvalid(update_error_out_valid),
+    .m_axis_result_tready(update_error_out_ready),
+    .m_axis_result_tdata(update_error_out)
 );
-
-
 ///////////////////////////////////////////**************************update_node_error**************************/////////////////////////////////////////////////////
-reg node_error_add_en=0;
-reg node_error_add_reset;
-wire [DIGIT_DIM-1:0] node_error_add_out;
-wire node_error_add_done;
+reg error_in_1_valid = 0;
+wire error_in_1_ready;
 
-fpa_adder node_error_adder(
-    .clk(clk),
-    .en(node_error_add_en),
-    .reset(node_error_add_reset),
-    .num1(error),
-    .num2(distance),
-    .num_out(node_error_add_out),
-    .is_done(node_error_add_done)
+reg error_in_2_valid = 0;
+wire error_in_2_ready;
+
+wire [DIGIT_DIM-1:0] error_out;
+reg error_out_ready = 0;
+wire error_out_valid;
+
+adder fpa_adder(
+    .aclk(clk),
+    .s_axis_a_tvalid(error_in_1_valid),
+    .s_axis_a_tready(error_in_1_ready),
+    .s_axis_a_tdata(error),
+
+    .s_axis_b_tvalid(error_in_2_valid),
+    .s_axis_b_tready(error_in_2_ready),
+    .s_axis_b_tdata(distance),
+
+    .m_axis_result_tvalid(error_out_valid),
+    .m_axis_result_tready(error_out_ready),
+    .m_axis_result_tdata(error_out)
 );
 
-///////////////////////////////////////////**************************get_min**************************/////////////////////////////////////////////////////
-wire [1:0] comp_out;
-wire comp_done;
-reg comp_en=0;
-reg comp_reset=0;
+///////////////////////////////////////////**************************check error overflowed**************************/////////////////////////////////////////////////////
+reg [DIGIT_DIM-1:0] comp_in_1;
+reg comp_in_1_valid = 0;
+wire comp_in_1_ready;
 
-fpa_comparator get_max(
-    .clk(clk),
-    .en(comp_en),
-    .reset(comp_reset),
-    .num1(GT),
-    .num2(error),
-    .num_out(comp_out),
-    .is_done(comp_done)
+reg [DIGIT_DIM-1:0] comp_in_2;
+reg comp_in_2_valid = 0;
+wire comp_in_2_ready;
+
+wire [7:0] comp_out;
+reg comp_out_ready = 0;
+wire comp_out_valid;
+
+comparator fpa_less_than_comparator(
+    .aclk(clk),
+    .s_axis_a_tvalid(comp_in_1_valid),
+    .s_axis_a_tready(comp_in_1_ready),
+    .s_axis_a_tdata(GT),
+
+    .s_axis_b_tvalid(comp_in_2_valid),
+    .s_axis_b_tready(comp_in_2_ready),
+    .s_axis_b_tdata(error),
+
+    .m_axis_result_tvalid(comp_out_valid),
+    .m_axis_result_tready(comp_out_ready),
+    .m_axis_result_tdata(comp_out)
 );
 
 ///////////////////////////////////////////**************************/////////////////////////////////////////////////////
@@ -181,7 +211,7 @@ always @(posedge clk or posedge reset) begin
             2 : begin
                 
                 if (!is_active && !controls_out_signals[1]) begin
-                    if (winner_row == row+1 && winner_col == col) begin
+                    if (winner_row+1 == row && winner_col == col) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*1-1 -:DIGIT_DIM*DIM];
                         is_active=1;
     
@@ -189,7 +219,7 @@ always @(posedge clk or posedge reset) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*2-1 -:DIGIT_DIM*DIM];
                         is_active=1;
     
-                    end else if (winner_row == row-1 && winner_col == col) begin
+                    end else if (winner_row-1 == row && winner_col == col) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*3-1 -:DIGIT_DIM*DIM];
                         is_active=1;
     
@@ -239,19 +269,23 @@ always @(posedge clk or posedge reset) begin
                         update_en=1;
                         update_reset=0;
     
-                        node_error_add_en=1;
-                        node_error_add_reset=0;
-    
-                        if (update_done=={DIM{1'b1}} && node_error_add_done) begin
+                        error_in_1_valid = 1;
+                        error_in_2_valid = 1;
+                        error_out_ready = 1;
+                            
+                        if (update_done=={DIM{1'b1}} && error_out_valid) begin
                             update_en=0;
                             update_reset=1;
     
-                            node_error_add_en=0;
-                            node_error_add_reset=1;
-                            error = node_error_add_out;
+                            error_in_1_valid = 0;
+                            error_in_2_valid = 0;
+                            error_out_ready = 0;
+                            
+                            error = error_out;
     
-                            comp_reset = 0;
-                            comp_en = 1;
+                            comp_in_1 = 1;
+                            comp_in_2 = 1;
+                            comp_out_ready = 1;
     
                             controls_out_signals[3] = 1;
                         end
@@ -279,19 +313,20 @@ always @(posedge clk or posedge reset) begin
             16 : begin
 
                 if (winner_row == row && winner_col == col && !controls_out_signals[4]) begin
-                    comp_en = 1;
-                    comp_reset = 0;
                     
-                    if (comp_done) begin
-                        if (comp_out==2 || comp_out==0) begin
+                    if (comp_out_valid) begin
+                        if (comp_out) begin
                             error_overflowed_signal = 1;
                             
-                        end else if (comp_out==1) begin
+                        end else begin
                             error_overflowed_signal = 0;
                             
                         end
-                        comp_en = 0;
-                        comp_reset = 1;
+                        
+                        comp_in_1 = 0;
+                        comp_in_2 = 0;
+                        comp_out_ready = 0;
+                        
                         controls_out_signals[4] = 1;
                     end
 
@@ -310,17 +345,21 @@ always @(posedge clk or posedge reset) begin
                         error[30:23] = GT[30:23]-1;
                         controls_out_signals[5] = 1;
     
-                    end else if ((winner_row==row+1 && winner_col==col) || 
-                                (winner_row==row && winner_col==col+1) || 
-                                (winner_row==row-1 && winner_col==col) || 
-                                (winner_row==row && winner_col==col-1)) begin 
+                    end else if ((winner_row+1==row && winner_col==col) || 
+                                (winner_row==row && winner_col+1==col) || 
+                                (winner_row-1==row && winner_col==col) || 
+                                (winner_row==row && winner_col-1==col)) begin 
     
-                        update_error_en=1;
-                        update_error_reset=0;
-                        if (update_error_done) begin
-                            update_error_en=0;
-                            update_error_reset=1;
-                            error = updated_error;
+                        update_error1_valid = 1;
+                        update_error2_valid = 1;
+                        update_error_out_ready = 1;
+                        
+                        if (update_error_out_valid) begin
+                            error = update_error_out;
+                            
+                            update_error1_valid = 0;
+                            update_error2_valid = 0;
+                            update_error_out_ready = 0;
     
                             controls_out_signals[5] = 1;
                         end

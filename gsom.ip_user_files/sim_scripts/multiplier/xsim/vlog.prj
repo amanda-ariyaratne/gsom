@@ -1,0 +1,6 @@
+verilog xil_defaultlib  \
+"../../../../gsom.gen/sources_1/ip/multiplier/multiplier_sim_netlist.v" \
+
+verilog xil_defaultlib "glbl.v"
+
+nosort
