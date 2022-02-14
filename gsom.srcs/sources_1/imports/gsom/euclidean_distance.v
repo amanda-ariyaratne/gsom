@@ -1,7 +1,7 @@
 `timescale  1 ns / 1 ps
 module euclidean_distance
 #(
-    parameter DIM=11,
+    parameter DIM=4,
     parameter DIGIT_DIM=32
 )
 (
@@ -17,12 +17,13 @@ module euclidean_distance
 ////////////////////module enables and disbles///////////////////////
 reg done=0;
 reg init=1;   
-reg next_1=0;                
+reg next_1=0;  
+reg next_2=0;                
 reg add_all_init=0;
 reg wait_en = 0;
 reg [DIGIT_DIM-1:0] out=0;
 //////////////////////////////PART 1////////////////////////////
-////////////////////distnace squer module///////////////////////
+////////////////////distnace square module///////////////////////
 reg dist_sqr_en=0;
 reg dist_sqr_reset=0;
 wire [DIGIT_DIM*DIM-1:0] dist_sqr_in_1;
@@ -36,7 +37,7 @@ wire [DIM-1:0] dist_sqr_is_done;
 genvar k;
 generate
     for (k=1; k<=DIM; k=k+1) begin
-        assign dist_sqr_is_done[k-1] = dist_sqr_done[DIGIT_DIM*k-1];
+        assign dist_sqr_is_done[k-1] = dist_sqr_done[(DIGIT_DIM*k)-1];
     end
 endgenerate
 
@@ -80,6 +81,25 @@ fpa_adder add_all(
     .num2(add_all_in_2),
     .num_out(add_all_out),
     .is_done(add_all_done)
+);
+
+////////////////////get the square root///////////////////////
+reg square_root_a_tvalid = 0;
+wire square_root_a_tready;
+reg [DIGIT_DIM-1:0] square_root_a_tdata;
+
+wire square_root_r_tvalid;
+reg square_root_r_tready = 0;
+wire [DIGIT_DIM-1:0] square_root_r_tdata;
+
+square_root fpa_square_root(
+  .aclk(clk),
+  .s_axis_a_tvalid(square_root_a_tvalid),
+  .s_axis_a_tready(square_root_a_tready),
+  .s_axis_a_tdata(square_root_a_tdata),
+  .m_axis_result_tvalid(square_root_r_tvalid),
+  .m_axis_result_tready(square_root_r_tready),
+  .m_axis_result_tdata(square_root_r_tdata)
 );
 
 integer signed j=DIGIT_DIM;
@@ -128,10 +148,21 @@ always @(posedge clk or posedge reset) begin
             
             if (j > DIGIT_DIM*DIM) begin
                 add_all_init = 0;
-                done = 1;
-                out = add_all_out;
+                
+                square_root_a_tvalid = 1;
+                square_root_r_tready = 1;
+                square_root_a_tdata = add_all_out;
+                
             end else 
                 wait_en = 0;
+                
+        end else if (square_root_r_tvalid && square_root_a_tvalid && square_root_r_tready) begin
+            
+            square_root_a_tvalid = 0;
+            square_root_r_tready = 0;
+            
+            done = 1;
+            out = add_all_out;
         end
     end
 end

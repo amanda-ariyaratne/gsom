@@ -76,7 +76,6 @@ reg adjust_weights_en=0;
 reg smoothing_en=0;
 reg spread_weighs_en=0;
 reg grow_nodes_en=0;
-reg node_count_adder_en = 0;
 
 reg next_iteration_en = 0;
 reg next_t1_en = 0;
@@ -93,8 +92,6 @@ reg test_mode=0;
 reg classification_en=0;
 
 reg [DIGIT_DIM-1:0] min_distance;
-reg [LOG2_ROWS-1:0] minimum_distance_indices [MAX_NODE_SIZE-1:0][1:0];
-reg [LOG2_NODE_SIZE-1:0] min_distance_next_index = 0;
 integer matrix_i, matrix_j;
 
 reg [LOG2_ROWS-1:0] bmu [1:0];
@@ -363,36 +360,53 @@ gsom_learning_rate lr(
 );
 
 ///////////////////////////////////////////**************************node_count_adder**************************/////////////////////////////////////////////////////
-reg node_count_ieee754_valid = 0;
-wire node_count_ieee754_ready;
-
 reg [DIGIT_DIM-1:0] no_of_new_node;
 
-reg [DIGIT_DIM-1:0] nca_count;
-reg nca_count_valid = 0;
-wire nca_count_ready;
-
+reg node_count_adder_en = 0;
+reg node_count_adder_reset = 0;
+wire node_count_adder_is_done;
+reg [DIGIT_DIM-1:0] nca_count = 0;
 wire [DIGIT_DIM-1:0] nca_num_out;
-wire nca_num_out_valid;
-reg nca_num_out_ready = 0;
 
 
-adder fpa_node_count_adder(
-    .aclk(clk),
-    .s_axis_a_tvalid(node_count_ieee754_valid),
-    .s_axis_a_tready(node_count_ieee754_ready),
-    .s_axis_a_tdata(node_count_ieee754),
-    .s_axis_b_tvalid(nca_count_valid),
-    .s_axis_b_tready(nca_count_ready),
-    .s_axis_b_tdata(nca_count),
-    .m_axis_result_tvalid(nca_num_out_valid),
-    .m_axis_result_tready(nca_num_out_ready),
-    .m_axis_result_tdata(nca_num_out)
+fpa_adder fpa_node_count_adder(
+    .clk(clk),
+    .reset(node_count_adder_reset),
+    .en(node_count_adder_en),
+    .num1(node_count_ieee754),
+    .num2(nca_count),
+    .num_out(nca_num_out),
+    .is_done(node_count_adder_is_done)        
 );
 
+//reg node_count_ieee754_valid = 0;
+//wire node_count_ieee754_ready;
+
+//reg [DIGIT_DIM-1:0] nca_count;
+//reg nca_count_valid = 0;
+//wire nca_count_ready;
+
+//wire [DIGIT_DIM-1:0] nca_num_out;
+//wire nca_num_out_valid;
+//reg nca_num_out_ready = 0;
+
+
+//adder fpa_node_count_adder(
+//    .aclk(clk),
+//    .s_axis_a_tvalid(node_count_ieee754_valid),
+//    .s_axis_a_tready(node_count_ieee754_ready),
+//    .s_axis_a_tdata(node_count_ieee754),
+//    .s_axis_b_tvalid(nca_count_valid),
+//    .s_axis_b_tready(nca_count_ready),
+//    .s_axis_b_tdata(nca_count),
+//    .m_axis_result_tvalid(nca_num_out_valid),
+//    .m_axis_result_tready(nca_num_out_ready),
+//    .m_axis_result_tdata(nca_num_out)
+//);
+
 ///////////////////////////////////////////**************************get_min**************************/////////////////////////////////////////////////////
-reg [DIGIT_DIM-1:0] comp_in_1;
-reg [DIGIT_DIM-1:0] comp_in_2;
+reg [DIGIT_DIM-1:0] comp_in_1=0;
+reg [DIGIT_DIM-1:0] comp_in_2=0;
 wire [1:0] comp_out;
 wire comp_done;
 reg comp_en=0;
@@ -409,32 +423,50 @@ fpa_comparator get_min(
 );
 
 ///////////////////////////////////////////**************************multiplier**************************/////////////////////////////////////////////////////
-reg [DIGIT_DIM-1:0] mul_num1;
-reg mul_num1_valid = 0;
-wire mul_num1_ready;
+reg multi_en = 0;
+reg multi_reset = 0;
+wire multi_is_done;
+reg [DIGIT_DIM-1:0] multi_num1;
+reg [DIGIT_DIM-1:0] multi_num2;
+wire [DIGIT_DIM-1:0] multi_num_out;
 
-reg [DIGIT_DIM-1:0] mul_num2;
-reg mul_num2_valid = 0;
-wire mul_num2_ready;
-
-wire [DIGIT_DIM-1:0] mul_num_out;
-reg mul_num_out_ready = 0;
-wire mul_num_out_valid;
-
-multiplier fpa_multiplier(
-    .aclk(clk),
-    .s_axis_a_tvalid(mul_num1_valid),
-    .s_axis_a_tready(mul_num1_ready),
-    .s_axis_a_tdata(mul_num1),
-    
-    .s_axis_b_tvalid(mul_num2_valid),
-    .s_axis_b_tready(mul_num2_ready),
-    .s_axis_b_tdata(mul_num2),
-    
-    .m_axis_result_tvalid(mul_num_out_valid),
-    .m_axis_result_tready(mul_num_out_ready),
-    .m_axis_result_tdata(mul_num_out)
+fpa_multiplier multiplier(
+    .clk(clk),
+    .en(multi_en),
+    .reset(multi_reset),
+    .is_done(multi_is_done),
+    .num1(multi_num1),
+    .num2(multi_num2),
+    .num_out(multi_num_out)
 );
+
+
+//reg [DIGIT_DIM-1:0] mul_num1;
+//reg mul_num1_valid = 0;
+//wire mul_num1_ready;
+
+//reg [DIGIT_DIM-1:0] mul_num2;
+//reg mul_num2_valid = 0;
+//wire mul_num2_ready;
+
+//wire [DIGIT_DIM-1:0] mul_num_out;
+//reg mul_num_out_ready = 0;
+//wire mul_num_out_valid;
+
+//multiplier fpa_multiplier(
+//    .aclk(clk),
+//    .s_axis_a_tvalid(mul_num1_valid),
+//    .s_axis_a_tready(mul_num1_ready),
+//    .s_axis_a_tdata(mul_num1),
+    
+//    .s_axis_b_tvalid(mul_num2_valid),
+//    .s_axis_b_tready(mul_num2_ready),
+//    .s_axis_b_tdata(mul_num2),
+    
+//    .m_axis_result_tvalid(mul_num_out_valid),
+//    .m_axis_result_tready(mul_num_out_ready),
+//    .m_axis_result_tdata(mul_num_out)
+//);
 ///////////////////////////////////////////**************************check_is_in_map**************************/////////////////////////////////////////////////////
 function is_active_in_map;
     input [LOG2_ROWS-1:0] coord_i;
@@ -479,19 +511,17 @@ always @(posedge clk) begin
 
     end else if (fit_en && smoothing_iter_en) begin
         $display("fit_en && smoothing_iter_en");
-        mul_num1 = learning_rate;
-        mul_num2 = smooth_learning_factor;
+        multi_num1 = learning_rate;
+        multi_num2 = smooth_learning_factor;
         
-        mul_num1_valid = 1;
-        mul_num2_valid = 1;
-        mul_num_out_ready = 1;
+        multi_en = 1;
+        multi_reset = 0;
         
-        if (mul_num_out_valid) begin
-            current_learning_rate = mul_num_out;
+        if (multi_is_done) begin
+            current_learning_rate = multi_num_out;
             
-            mul_num1_valid = 0;
-            mul_num2_valid = 0;
-            mul_num_out_ready = 0;
+            multi_en = 0;
+            multi_reset = 1;
             
             iteration = -1;
             next_iteration_en = 1;
@@ -529,7 +559,7 @@ always @(posedge clk) begin
 
     end else  if (get_LR_en && growing_iter_en) begin
     // learning rate calculation
-        $display("growing phase - calculating learning rate");
+        //$display("growing phase - calculating learning rate");
         lr_reset = 0;
         lr_en = 1;
         if (lr_is_done) begin
@@ -608,7 +638,7 @@ always @(posedge clk) begin
         next_t1_en = 0;
 
     end else if (dist_enable) begin
-        $display("dist_enable");
+        //$display("dist_enable");
         controls_in[2] = 1;
 
         if (controls_out[2] == { MAX_ROWS*MAX_COLS{1'b1} }) begin
@@ -622,29 +652,18 @@ always @(posedge clk) begin
         end
 
     end else if (min_distance_en) begin
-        $display("min_distance_en");
         if (is_active_in_map(matrix_i, matrix_j)) begin
-            $display("matrix_i %d matrix_j %d", matrix_i, matrix_j);
             comp_in_1 = min_distance;
             comp_in_2 = distances[matrix_i][matrix_j];
             comp_reset = 0;
             comp_en = 1;
             
-            if (comp_done) begin
-                comp_en = 0;
-                comp_reset = 1;
-                
-                if (comp_out==0) begin
-                    minimum_distance_indices[min_distance_next_index][1] = matrix_i;
-                    minimum_distance_indices[min_distance_next_index][0] = matrix_j;
-                    min_distance_next_index = min_distance_next_index + 1;
-                
-                end else if (comp_out==1) begin
+            if (comp_done) begin    
+                if (comp_out==1) begin
+                    bmu[1] = matrix_i;
+                    bmu[0] = matrix_j;
                     min_distance = distances[matrix_i][matrix_j];
-                    minimum_distance_indices[0][1] = matrix_i;
-                    minimum_distance_indices[0][0] = matrix_j;              
-                    min_distance_next_index = 1;
-                end 
+                end
                 
                 matrix_j = matrix_j + 1;
                 if (matrix_j == MAX_COLS) begin
@@ -652,9 +671,12 @@ always @(posedge clk) begin
                     matrix_j = 0;
                     if (matrix_i == MAX_ROWS) begin
                         min_distance_en=0;
-                        bmu_en=1;
+                        weights_update=1;
                     end
                 end
+                
+                comp_en = 0;
+                comp_reset = 1;
                 
             end
         end else begin
@@ -670,8 +692,7 @@ always @(posedge clk) begin
         end
         
     end else if (weights_update) begin
-        $display("weights_update");
-        //$display("weights_update %h", controls_out[3]); 
+        //$display("weights_update %h", controls_out[3]);
         // update weights
         controls_in[3] = 1;            
         if (controls_out[3] == { MAX_ROWS*MAX_COLS{1'b1} }) begin
@@ -741,22 +762,20 @@ always @(posedge clk) begin
         else if (no_of_new_node==3)
             nca_count = 32'h40400000;
             
-        nca_count_valid = 1;
-        node_count_ieee754_valid = 1;
-        nca_num_out_ready = 1;  
+        node_count_adder_en = 1;
+        node_count_adder_reset = 0;
         
     end else if (controls_in[1]) begin
         $display("controls_in[1]");
-        if (controls_out[1] == { MAX_ROWS*MAX_COLS {1'b1} } && nca_num_out_valid) begin
+        if (controls_out[1] == { MAX_ROWS*MAX_COLS {1'b1} } && node_count_adder_is_done) begin
             controls_in[1] = 0;
             next_t1_en = 1; 
             
             node_count_ieee754 = nca_num_out;
             
-            nca_count_valid = 0;
-            node_count_ieee754_valid = 0;
-            nca_num_out_ready = 0;
-            $display("grow nodes"); 
+            node_count_adder_en = 0;
+            node_count_adder_reset = 1;
+            $display("grow nodes");
         end
     end
 end

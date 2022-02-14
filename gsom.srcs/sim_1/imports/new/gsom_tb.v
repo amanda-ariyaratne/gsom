@@ -15,7 +15,6 @@ module gsom_tb();
     reg [32:0] i=0;
     initial begin
         for (i=0;i<1000_000_000; i=i+1) begin
-            $display("i %d", i);
             clk = ~clk;
             if (completed)
                 $finish;

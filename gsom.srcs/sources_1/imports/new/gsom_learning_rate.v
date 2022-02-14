@@ -24,14 +24,16 @@ module gsom_learning_rate
 
 reg [DIGIT_DIM-1:0] R = 32'h40733333;
 
-reg divider1_a_tvalid;
+reg divider1_a_tvalid = 0;
 wire divider1_a_tready;
 reg [DIGIT_DIM-1:0] divider1_a_tdata;
-reg divider1_b_tvalid;
+
+reg divider1_b_tvalid = 0;
 wire divider1_b_tready;
 reg [DIGIT_DIM-1:0] divider1_b_tdata;
+
 wire divider1_result_tvalid;
-reg divider1_result_tready;
+reg divider1_result_tready = 0;
 wire [DIGIT_DIM-1:0] divider1_result_tdata;
 
 
@@ -48,14 +50,16 @@ divider divider1(
   .m_axis_result_tdata(divider1_result_tdata)
 );
 
-reg adder1_a_tvalid;
+reg adder1_a_tvalid = 0;
 wire adder1_a_tready;
 reg [DIGIT_DIM-1:0] adder1_a_tdata;
-reg adder1_b_tvalid;
+
+reg adder1_b_tvalid = 0;
 wire adder1_b_tready;
 reg [DIGIT_DIM-1:0] adder1_b_tdata;
+
 wire adder1_result_tvalid;
-reg adder1_result_tready;
+reg adder1_result_tready = 0;
 wire [DIGIT_DIM-1:0] adder1_result_tdata;
 
 adder adder1(
@@ -71,13 +75,13 @@ adder adder1(
   .m_axis_result_tdata(adder1_result_tdata)
 );
 
-reg multiplier1_a_tvalid;
+reg multiplier1_a_tvalid = 0;
 wire multiplier1_a_tready;
 reg [DIGIT_DIM-1:0] multiplier1_a_tdata;
-reg multiplier1_b_tvalid;
+reg multiplier1_b_tvalid = 0;
 wire multiplier1_b_tready;
 reg [DIGIT_DIM-1:0] multiplier1_b_tdata;
-reg multiplier1_result_tready;
+reg multiplier1_result_tready = 0;
 wire multiplier1_result_tvalid;
 wire [DIGIT_DIM-1:0] multiplier1_result_tdata;
 
@@ -95,13 +99,15 @@ multiplier multiplier1(
 );
 
 
-reg multiplier2_a_tvalid;
+reg multiplier2_a_tvalid = 0;
 wire multiplier2_a_tready;
 reg [DIGIT_DIM-1:0] multiplier2_a_tdata;
-reg multiplier2_b_tvalid;
+
+reg multiplier2_b_tvalid = 0;
 wire multiplier2_b_tready;
 reg [DIGIT_DIM-1:0] multiplier2_b_tdata;
-reg multiplier2_result_tready;
+
+reg multiplier2_result_tready = 0;
 wire multiplier2_result_tvalid;
 wire [DIGIT_DIM-1:0] multiplier2_result_tdata;
 
@@ -137,22 +143,29 @@ always @(posedge clk or posedge reset) begin
     end else if (en && init) begin
         out = 0;
         
+        $display("R/node_count");
+        
         divider1_a_tdata = R;
         divider1_b_tdata = node_count;
         divider1_a_tvalid = 1;
-        divider1_b_tvalid = 1;
-        divider1_result_tready = 1;
+        divider1_b_tvalid = 1;    
         
+        $display("alpha x prev_learning_rate");
         multiplier1_a_tdata = alpha;
         multiplier1_b_tdata = prev_learning_rate;
         multiplier1_a_tvalid = 1;
         multiplier1_b_tvalid = 1;
-        multiplier1_result_tready = 1;
         
-        init = 0; 
-        step_1 = 1; 
+        if (divider1_a_tready && divider1_b_tready && multiplier1_a_tready && multiplier1_b_tready) begin
+            divider1_result_tready = 1;
+            multiplier1_result_tready = 1;
+            init = 0; 
+            step_1 = 1; 
+        end
         
     end else if (en && step_1 && divider1_result_tvalid) begin
+    
+        $display("1 - R/node_count");
                 
         adder1_a_tdata = 32'h3F800000;
         adder1_b_tdata = divider1_result_tdata;
@@ -169,7 +182,9 @@ always @(posedge clk or posedge reset) begin
         divider1_result_tready = 0;
            
     end else if (en && step_2 && multiplier1_result_tvalid && adder1_result_tvalid) begin
-
+        
+        $display("(1 - R/node_count) x (alpha x prev_learning_rate)");
+        
         multiplier2_a_tdata = multiplier1_result_tdata;
         multiplier2_b_tdata = adder1_result_tdata;
         multiplier2_a_tvalid = 1;

@@ -1,7 +1,7 @@
 `timescale  1 ns / 1 ps
 module fpa_distance
 #(
-    parameter DIM=11,
+    parameter DIM=4,
     parameter DIGIT_DIM=32
 )
 (
@@ -97,14 +97,14 @@ always @(posedge clk or posedge reset) begin
             init=0;
         end
         
-        if (subtraction_done && !squrae_en) begin
-//            adder1_a_tvalid = 1;
-//            adder1_b_tvalid = 1;
-//            adder1_result_tready = 1;
+        if (subtraction_done && !squrae_en) begin // if (adder1_result_tvalid && !squrae_en) begin
+//            adder1_a_tvalid = 0;
+//            adder1_b_tvalid = 0;
+//            adder1_result_tready = 0;
             sub_en=0;
             sub_reset=1;
             
-            square_in = subtraction_out;
+            square_in = subtraction_out; // adder1_result_tdata;
             squrae_en=1;
             squrae_reset=0;
         end
