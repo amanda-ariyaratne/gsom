@@ -653,12 +653,16 @@ always @(posedge clk) begin
 
     end else if (min_distance_en) begin
         if (is_active_in_map(matrix_i, matrix_j)) begin
+            
             comp_in_1 = min_distance;
             comp_in_2 = distances[matrix_i][matrix_j];
             comp_reset = 0;
             comp_en = 1;
             
             if (comp_done) begin    
+                $display("%d %d", matrix_i, matrix_j);
+                $display("%h ... %h = %d", comp_in_1, comp_in_2, comp_out);
+                
                 if (comp_out==1) begin
                     bmu[1] = matrix_i;
                     bmu[0] = matrix_j;

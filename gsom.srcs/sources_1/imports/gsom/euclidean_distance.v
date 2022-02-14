@@ -83,7 +83,7 @@ fpa_adder add_all(
     .is_done(add_all_done)
 );
 
-////////////////////get the square root///////////////////////
+//////////////////get the square root///////////////////////
 reg square_root_a_tvalid = 0;
 wire square_root_a_tready;
 reg [DIGIT_DIM-1:0] square_root_a_tdata;
@@ -162,7 +162,7 @@ always @(posedge clk or posedge reset) begin
             square_root_r_tready = 0;
             
             done = 1;
-            out = add_all_out;
+            out = square_root_r_tdata;
         end
     end
 end

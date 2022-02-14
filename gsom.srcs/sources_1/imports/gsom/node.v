@@ -391,7 +391,7 @@ always @(posedge clk or posedge reset) begin
                 if (!controls_out_signals[5]) begin
                     if (winner_row==row && winner_col==col) begin 
                         error = GT;
-                        error[30:23] = GT[30:23]-1;
+                        // error[30:23] = GT[30:23]-1;
                         controls_out_signals[5] = 1;
     
                     end else if ((winner_row+1==row && winner_col==col) || 
