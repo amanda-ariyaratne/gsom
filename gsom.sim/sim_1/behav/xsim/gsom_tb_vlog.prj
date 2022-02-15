@@ -1,14 +1,12 @@
 # compile verilog/system verilog design source files
 verilog xil_defaultlib  \
-"../../../../gsom.gen/sources_1/ip/square_root/square_root_sim_netlist.v" \
-"../../../../gsom.gen/sources_1/ip/multiplier/multiplier_sim_netlist.v" \
 "../../../../gsom.gen/sources_1/ip/adder/adder_sim_netlist.v" \
+"../../../../gsom.gen/sources_1/ip/multiplier/multiplier_sim_netlist.v" \
+"../../../../gsom.gen/sources_1/ip/less_than_comparator/less_than_comparator_sim_netlist.v" \
+"../../../../gsom.gen/sources_1/ip/square_root/square_root_sim_netlist.v" \
 "../../../../gsom.gen/sources_1/ip/divider/divider_sim_netlist.v" \
 "../../../../gsom.srcs/sources_1/imports/gsom/euclidean_distance.v" \
-"../../../../gsom.srcs/sources_1/imports/gsom/fpa_adder.v" \
-"../../../../gsom.srcs/sources_1/imports/gsom/fpa_comparator.v" \
 "../../../../gsom.srcs/sources_1/imports/new/fpa_distance.v" \
-"../../../../gsom.srcs/sources_1/imports/gsom/fpa_multiplier.v" \
 "../../../../gsom.srcs/sources_1/imports/gsom/grow_node_in_middle.v" \
 "../../../../gsom.srcs/sources_1/imports/gsom/grow_node_on_one_side.v" \
 "../../../../gsom.srcs/sources_1/imports/gsom/gsom.v" \

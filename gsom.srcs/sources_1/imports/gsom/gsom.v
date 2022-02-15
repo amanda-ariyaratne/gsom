@@ -495,6 +495,7 @@ endfunction
 
 always @(posedge clk) begin
     if (init_gsom) begin
+        $display("gsom init started");
         controls_in[0] = 1;
         // Todo : don't know whether this is correct or not
         up_weight = random_weights[0];
@@ -510,6 +511,7 @@ always @(posedge clk) begin
             init_gsom = 0;
             fit_en = 1;
             growing_iter_en = 1;
+            $display("gsom init finished");
         end
         
     end else if (fit_en && growing_iter_en) begin
@@ -550,7 +552,7 @@ always @(posedge clk) begin
         $display("next_iteration_en && growing_iter_en");
         if (iteration < GROWING_ITERATIONS) begin
             iteration = iteration + 1;
-
+            
             // neighbourhood                
             if (iteration <= delta_growing_iter) begin
                 radius = 4;
@@ -559,6 +561,8 @@ always @(posedge clk) begin
             end else if ((iteration <= delta_growing_iter*3) && (iteration > delta_growing_iter*2)) begin
                 radius = 1;
             end 
+            
+            $display("growing iteration %d \t radius %d", iteration, radius);
             
             // learning rate
             if (iteration != 0) begin
@@ -576,12 +580,10 @@ always @(posedge clk) begin
         next_iteration_en = 0;
 
     end else  if (get_LR_en && growing_iter_en) begin
-    // learning rate calculation
-        //$display("growing phase - calculating learning rate");
+        $display("get_LR_en && growing_iter_en");
         lr_reset = 0;
         lr_en = 1;
         if (lr_is_done) begin
-            $display("growing phase - finish calculating learning rate");
             lr_en = 0;
             lr_reset = 1;
             current_learning_rate = lr_out;
@@ -590,8 +592,7 @@ always @(posedge clk) begin
         end
 
     end else if (grow_en) begin    
-    // grow network
-    
+        $display("grow_en");
         grow_en = 0;
         t1 = -1;
         next_t1_en = 1;
@@ -610,6 +611,8 @@ always @(posedge clk) begin
                 radius = 1;
             end 
             
+            $display("smoothing iteration %d \t radius %d", iteration, radius);
+            
             // learning rate
             if (iteration != 0)
                 get_LR_en = 1;
@@ -626,12 +629,10 @@ always @(posedge clk) begin
         end
 
     end else if (get_LR_en && smoothing_iter_en) begin
-    // calculate learning rate
-        $display("smoothing phase - calculating learning rate");
+        $display("get_LR_en && smoothing_iter_en");
         lr_en = 1;
         lr_reset = 0;
         if (lr_is_done) begin
-            $display("smoothing phase - finish calculating learning rate");
             lr_en = 0;
             lr_reset = 1;
             current_learning_rate = lr_out;
@@ -640,14 +641,17 @@ always @(posedge clk) begin
         end
 
     end else if (smooth_en) begin
+        $display("smooth_en");
         smooth_en = 0;
         t1 = -1;
         next_t1_en = 1;
 
     end else if (next_t1_en) begin
+        $display("next_t1_en");
         if (t1 < TRAIN_ROWS-1) begin
             t1 = t1 + 1; 
-            $display("iter %d t1 %d node count %d", iteration, t1, node_count);
+            $display("iteration %d \t t1 %d \t node count %d", iteration, t1, node_count);
+            $display("current input %h", trainX[t1]);
             dist_enable = 1;
             
         end else begin
@@ -656,11 +660,11 @@ always @(posedge clk) begin
         next_t1_en = 0;
 
     end else if (dist_enable) begin
-        //$display("dist_enable");
+        $display("dist_enable");
         controls_in[2] = 1;
 
         if (controls_out[2] == { MAX_ROWS*MAX_COLS{1'b1} }) begin
-            $display("calculated all distances");
+            $display("finished distance calculation");
             controls_in[2] = 0;
             matrix_i = 0;
             matrix_j = 0;
@@ -670,6 +674,7 @@ always @(posedge clk) begin
         end
 
     end else if (min_distance_en) begin
+        $display("min_distance_en");
         if (is_active_in_map(matrix_i, matrix_j)) begin
             
             comp_in_1 = distances[matrix_i][matrix_j];
@@ -680,9 +685,7 @@ always @(posedge clk) begin
             min_comparator_b_tvalid = 1;
             min_comparator_result_tready = 1;
             
-            if (min_comparator_result_tvalid) begin    
-                $display("%d %d", matrix_i, matrix_j);
-                $display("%h ... %h = %d", comp_in_1, comp_in_2, comp_out);
+            if (min_comparator_result_tvalid && min_comparator_a_tvalid) begin    
                 
                 if (comp_out[0] == 1) begin
                     bmu[1] = matrix_i;
@@ -713,6 +716,7 @@ always @(posedge clk) begin
                 matrix_i = matrix_i + 1;
                 matrix_j = 0;
                 if (matrix_i == MAX_ROWS) begin
+                    $display("bmu row %d col %d", bmu[1], bmu[0]);
                     min_distance_en=0;
                     weights_update=1;
                 end
@@ -720,10 +724,11 @@ always @(posedge clk) begin
         end
         
     end else if (weights_update) begin
-        //$display("weights_update %h", controls_out[3]);
+        $display("weights_update");
         // update weights
         controls_in[3] = 1;            
         if (controls_out[3] == { MAX_ROWS*MAX_COLS{1'b1} }) begin
+            $display("finished weights update");
             controls_in[3] = 0;
             weights_update = 0;
             if (growing_iter_en)
@@ -740,6 +745,7 @@ always @(posedge clk) begin
             controls_in[4] = 0;
 
             if (^error_overflowed) begin
+                $display("error > GT");
                 // spread or grow
                 left_j = bmu[0]-1;    left_i = bmu[1];
                 right_j = bmu[0]+1;   right_i = bmu[1];
@@ -747,9 +753,11 @@ always @(posedge clk) begin
                 bottom_j = bmu[0];    bottom_i = bmu[1]-1;
 
                 if (is_active_in_map(left_i, left_j) && is_active_in_map(right_i, right_j) && is_active_in_map(up_i, up_j) && is_active_in_map(bottom_i, bottom_j)) begin
-                    spread_weighs_en = 1;   
+                    spread_weighs_en = 1;  
+                    $display("decided to spread weight"); 
 
                 end else begin
+                    $display("decided to grow nodes");
                     grow_nodes_en = 1;
                     winner = weights[bmu[1]][bmu[0]];
                 end
@@ -770,7 +778,7 @@ always @(posedge clk) begin
             controls_in[5] = 0;    
             next_t1_en = 1;    
             spread_weighs_en = 0;      
-            $display("spread_weighs_en %d %d", bmu[1], bmu[0]);  
+             
         end
 
     end else if (grow_nodes_en && up && right && bottom && left) begin
@@ -798,7 +806,9 @@ always @(posedge clk) begin
         
     end else if (controls_in[1]) begin
         $display("controls_in[1]");
-        if (controls_out[1] == { MAX_ROWS*MAX_COLS {1'b1} } && node_count_adder_result_tvalid) begin // node_count_adder_is_done
+        if (controls_out[1] == { MAX_ROWS*MAX_COLS {1'b1} } 
+                && node_count_adder_result_tvalid 
+                && node_count_adder_result_tready) begin // node_count_adder_is_done
             controls_in[1] = 0;
             next_t1_en = 1; 
             
@@ -809,7 +819,7 @@ always @(posedge clk) begin
             node_count_adder_a_tvalid = 0;
             node_count_adder_b_tvalid = 0;
             node_count_adder_result_tready = 0;
-            $display("grow nodes");
+            $display("node count %d %h", node_count, node_count_ieee754);
         end
     end
 end
@@ -823,25 +833,25 @@ always @(posedge clk) begin
             up_new_node_in_middle_en = 1;
             up_new_node_in_middle_reset = 0;
             up_new_node_next_node = weights[up_i+1][up_j];
-            $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
+            // $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
 
         end else if ( is_active_in_map(bmu[1]-1, bmu[0]) && is_active[bmu[1]-1][bmu[0]] ) begin
             up_new_node_on_one_side_en = 1;
             up_new_node_on_one_side_reset = 0;
             up_new_node_next_node = weights[bmu[1]-1][bmu[0]];
-            $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
+            // $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
 
         end else if (is_active_in_map(bmu[1], bmu[0]+1)  && is_active[bmu[1]][bmu[0]+1] ) begin
             up_new_node_on_one_side_en = 1;
             up_new_node_on_one_side_reset = 0;
             up_new_node_next_node = weights[bmu[1]][bmu[0]+1];
-            $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
+            // $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
 
         end else if (is_active_in_map(bmu[1], bmu[0]-1)  && is_active[bmu[1]][bmu[0]-1] ) begin
             up_new_node_on_one_side_en = 1;
             up_new_node_on_one_side_reset = 0;
             up_new_node_next_node = weights[bmu[1]][bmu[0]-1];
-            $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
+            // $display("up 1 %d %d %h %h", up_i, up_j, up_new_node_next_node, winner);
 
         end
     // check if node adding enabled -> check job done?
@@ -851,7 +861,7 @@ always @(posedge clk) begin
             up_new_node_in_middle_reset = 1;
             up_weight = up_new_node_in_middle_weight;
             up = 1;
-            $display("up addeded %d %d", up_i, up_j);
+            // $display("up addeded %d %d", up_i, up_j);
         end
     // check if node adding enabled -> check job done?
     end else if (up_new_node_on_one_side_en) begin
@@ -860,7 +870,7 @@ always @(posedge clk) begin
             up_new_node_on_one_side_reset = 1;
             up_weight = up_new_node_on_one_side_weight;
             up = 1;
-            $display("up addeded %d %d", up_i, up_j);
+            // $display("up addeded %d %d", up_i, up_j);
         end
     // if node adding no need
     end else begin
@@ -877,25 +887,25 @@ always @(posedge clk) begin
             right_new_node_in_middle_en = 1;
             right_new_node_in_middle_reset = 0;
             right_new_node_next_node = weights[right_i][right_j+1];
-            $display("right 1 %d %d", right_i, right_j);
+            // $display("right 1 %d %d", right_i, right_j);
 
         end else if (is_active_in_map(bmu[1], bmu[0]-1) && is_active[bmu[1]][bmu[0]-1]) begin
             right_new_node_on_one_side_en = 1;
             right_new_node_on_one_side_reset = 0;
             right_new_node_next_node = weights[bmu[1]][bmu[0]-1];
-            $display("right 2 %d %d", right_i, right_j);
+            // $display("right 2 %d %d", right_i, right_j);
 
         end else if (is_active_in_map(bmu[1]+1, bmu[0]) && is_active[bmu[1]+1][bmu[0]]) begin
             right_new_node_on_one_side_en = 1;
             right_new_node_on_one_side_reset = 0;
             right_new_node_next_node = weights[bmu[1]+1][bmu[0]];
-            $display("right 3 %d %d", right_i, right_j);
+            // $display("right 3 %d %d", right_i, right_j);
 
         end else if (is_active_in_map(bmu[1]-1, bmu[0]) && is_active[bmu[1]-1][bmu[0]]) begin
             right_new_node_on_one_side_en = 1;
             right_new_node_on_one_side_reset = 0;
             right_new_node_next_node = weights[bmu[1]-1][bmu[0]];
-            $display("right 4 %d %d", right_i, right_j);
+            // $display("right 4 %d %d", right_i, right_j);
             
         end
     // check if node adding enabled -> check job done?
@@ -905,7 +915,7 @@ always @(posedge clk) begin
             right_new_node_in_middle_reset = 1;
             right_weight = right_new_node_in_middle_weight;
             right = 1;
-            $display("right addeded %d %d", right_i, right_j);
+            // $display("right addeded %d %d", right_i, right_j);
         end
     // check if node adding enabled -> check job done?
     end else if (right_new_node_on_one_side_en) begin
@@ -914,7 +924,7 @@ always @(posedge clk) begin
             right_new_node_on_one_side_reset = 1;
             right_weight = right_new_node_on_one_side_weight;
             right = 1;
-            $display("right addeded %d %d", right_i, right_j);
+            // $display("right addeded %d %d", right_i, right_j);
         end
     // if node adding no need
     end else begin
@@ -931,25 +941,25 @@ always @(posedge clk) begin
             bottom_new_node_in_middle_en = 1;
             bottom_new_node_in_middle_reset = 0;
             bottom_new_node_next_node = weights[bottom_i-1][bottom_j];
-            $display("bottom in middle %d %d %b", bottom_i, bottom_j, is_active[bottom_i-1][bottom_j]);
+            // $display("bottom in middle %d %d %b", bottom_i, bottom_j, is_active[bottom_i-1][bottom_j]);
 
         end else if (is_active_in_map(bmu[1]+1, bmu[0]) && is_active[bmu[1]+1][bmu[0]]) begin
             bottom_new_node_on_one_side_en = 1;
             bottom_new_node_on_one_side_reset = 0;
             bottom_new_node_next_node = weights[bmu[1]+1][bmu[0]];
-            $display("bottom on one side %d %d %d %d", bottom_i, bottom_j, bmu[1]+1, bmu[0]);
+            // $display("bottom on one side %d %d %d %d", bottom_i, bottom_j, bmu[1]+1, bmu[0]);
 
         end else if (is_active_in_map(bmu[1], bmu[0]+1) && is_active[bmu[1]][bmu[0]+1]) begin
             bottom_new_node_on_one_side_en = 1;
             bottom_new_node_on_one_side_reset = 0;
             bottom_new_node_next_node = weights[bmu[1]][bmu[0]+1];
-            $display("bottom on one side %d %d %d %d", bottom_i, bottom_j, bmu[1], bmu[0]+1);
+            // $display("bottom on one side %d %d %d %d", bottom_i, bottom_j, bmu[1], bmu[0]+1);
 
         end else if (is_active_in_map(bmu[1], bmu[0]-1) && is_active[bmu[1]][bmu[0]-1]) begin
             bottom_new_node_on_one_side_en = 1;
             bottom_new_node_on_one_side_reset = 0;
             bottom_new_node_next_node = weights[bmu[1]][bmu[0]-1];
-            $display("bottom on one side %d %d %d %d", bottom_i, bottom_j, bmu[1], bmu[0]-1);
+            // $display("bottom on one side %d %d %d %d", bottom_i, bottom_j, bmu[1], bmu[0]-1);
 
         end
     // check if node adding enabled -> check job done?
@@ -959,7 +969,7 @@ always @(posedge clk) begin
             bottom_new_node_in_middle_reset = 1;
             bottom_weight = bottom_new_node_in_middle_weight;
             bottom = 1;
-            $display("bottom addeded %d %d", bottom_i, bottom_j);
+            // $display("bottom addeded %d %d", bottom_i, bottom_j);
         end
     // check if node adding enabled -> check job done?
     end else if (bottom_new_node_on_one_side_en) begin
@@ -968,7 +978,7 @@ always @(posedge clk) begin
             bottom_new_node_on_one_side_reset = 1;
             bottom_weight = bottom_new_node_on_one_side_weight;
             bottom = 1;
-            $display("bottom addeded %d %d", bottom_i, bottom_j);
+            // $display("bottom addeded %d %d", bottom_i, bottom_j);
         end
     // if node adding no need
     end else begin

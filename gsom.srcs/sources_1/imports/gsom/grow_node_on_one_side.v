@@ -17,49 +17,43 @@ reg done = 0;
 reg init = 1;
 reg [DIGIT_DIM-1:0] out;
 
-reg adder_en = 0;
-reg adder_reset = 0;
+//reg adder_en = 0;
+//reg adder_reset = 0;
+//wire adder_is_done;
 reg [DIGIT_DIM-1:0] winner_in = 0;
 reg [DIGIT_DIM-1:0] node_next_in = 0;
 wire [DIGIT_DIM-1:0] new_weight_out;
-wire adder_is_done;
 
-fpa_adder adder(
-    .clk(clk),
-    .reset(adder_reset),
-    .en(adder_en),
-    .num1(winner_in),
-    .num2(node_next_in),
-    .num_out(new_weight_out),
-    .is_done(adder_is_done)        
-);
 
-//reg [DIGIT_DIM-1:0] winner_in;
-//reg winner_in_valid = 0;
-//wire winner_in_ready;
-
-//reg [DIGIT_DIM-1:0] node_next_in;
-//reg node_next_in_valid = 0;
-//wire node_next_in_ready;
-
-//wire [DIGIT_DIM-1:0] new_weight_out;
-//reg new_weight_out_ready = 0;
-//wire new_weight_out_valid;
-
-//adder fpa_node_count_adder(
-//    .aclk(clk),
-//    .s_axis_a_tvalid(winner_in_valid),
-//    .s_axis_a_tready(winner_in_ready),
-//    .s_axis_a_tdata(winner_in),
-    
-//    .s_axis_b_tvalid(node_next_in_valid),
-//    .s_axis_b_tready(node_next_in_ready),
-//    .s_axis_b_tdata(node_next_in),
-    
-//    .m_axis_result_tvalid(new_weight_out_valid),
-//    .m_axis_result_tready(new_weight_out_ready),
-//    .m_axis_result_tdata(new_weight_out)
+//fpa_adder adder(
+//    .clk(clk),
+//    .reset(adder_reset),
+//    .en(adder_en),
+//    .num1(winner_in),
+//    .num2(node_next_in),
+//    .num_out(new_weight_out),
+//    .is_done(adder_is_done)        
 //);
+
+reg adder1_a_tvalid = 0;
+wire adder1_a_tready;
+reg adder1_b_tvalid = 0;
+wire adder1_b_tready;
+wire adder1_result_tvalid;
+reg adder1_result_tready = 0;
+
+adder adder1(
+  .aclk(clk),
+  .s_axis_a_tvalid(adder1_a_tvalid),
+  .s_axis_a_tready(adder1_a_tready),
+  .s_axis_a_tdata(winner_in),
+  .s_axis_b_tvalid(adder1_b_tvalid),
+  .s_axis_b_tready(adder1_b_tready),
+  .s_axis_b_tdata(node_next_in),
+  .m_axis_result_tvalid(adder1_result_tvalid),
+  .m_axis_result_tready(adder1_result_tready),
+  .m_axis_result_tdata(new_weight_out)
+);
 
 always @(posedge clk or posedge reset) begin
     if (reset) begin
@@ -73,16 +67,22 @@ always @(posedge clk or posedge reset) begin
             node_next_in = node_next;
             node_next_in[31] = ~node_next_in[31]; // -
             
-            adder_en = 1;
-            adder_reset = 0;
+//            adder_en = 1;
+//            adder_reset = 0;
+            adder1_a_tvalid = 1;
+            adder1_b_tvalid = 1;
+            adder1_result_tready = 1;
             init=0;
             
-        end else if (adder_is_done) begin   
+        end else if (adder1_result_tvalid && adder1_a_tvalid) begin // adder_is_done
             out = new_weight_out;   
             done = 1; 
             
-            adder_en = 0;
-            adder_reset = 1;
+//            adder_en = 0;
+//            adder_reset = 1;
+            adder1_a_tvalid = 0;
+            adder1_b_tvalid = 0;
+            adder1_result_tready = 0;
         end
     end
 end

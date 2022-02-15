@@ -63,24 +63,44 @@ generate
 endgenerate
 ////////////////////add distance unit///////////////////////
 
-reg add_all_en=0;
-reg add_all_reset=0;
-reg [DIGIT_DIM-1:0] add_all_in_1=0;
-reg [DIGIT_DIM-1:0] add_all_in_2;
+//reg add_all_en=0;
+//reg add_all_reset=0;
+reg [DIGIT_DIM-1:0] add_all_in_1 = 0;
+reg [DIGIT_DIM-1:0] add_all_in_2 = 0;
 wire [DIGIT_DIM-1:0] add_all_out;
-wire add_all_done;
+//wire add_all_done;
 
 assign distance_out = out;
 assign is_done = done;
 
-fpa_adder add_all(
-    .clk(clk),
-    .en(add_all_en),
-    .reset(add_all_reset),
-    .num1(add_all_in_1),
-    .num2(add_all_in_2),
-    .num_out(add_all_out),
-    .is_done(add_all_done)
+//fpa_adder add_all(
+//    .clk(clk),
+//    .en(add_all_en),
+//    .reset(add_all_reset),
+//    .num1(add_all_in_1),
+//    .num2(add_all_in_2),
+//    .num_out(add_all_out),
+//    .is_done(add_all_done)
+//);
+
+reg adder1_a_tvalid = 0;
+wire adder1_a_tready;
+reg adder1_b_tvalid = 0;
+wire adder1_b_tready;
+wire adder1_result_tvalid;
+reg adder1_result_tready = 0;
+
+adder adder1 (
+  .aclk(clk),                                  
+  .s_axis_a_tvalid(adder1_a_tvalid),            
+  .s_axis_a_tready(adder1_a_tready),            
+  .s_axis_a_tdata(add_all_in_1),              
+  .s_axis_b_tvalid(adder1_b_tvalid),           
+  .s_axis_b_tready(adder1_b_tready),            
+  .s_axis_b_tdata(add_all_in_2),              
+  .m_axis_result_tvalid(adder1_result_tvalid),  
+  .m_axis_result_tready(adder1_result_tready),  
+  .m_axis_result_tdata(add_all_out)    
 );
 
 //////////////////get the square root///////////////////////
@@ -92,7 +112,7 @@ wire square_root_r_tvalid;
 reg square_root_r_tready = 0;
 wire [DIGIT_DIM-1:0] square_root_r_tdata;
 
-square_root fpa_square_root(
+square_root square_root1(
   .aclk(clk),
   .s_axis_a_tvalid(square_root_a_tvalid),
   .s_axis_a_tready(square_root_a_tready),
@@ -114,9 +134,14 @@ always @(posedge clk or posedge reset) begin
         dist_sqr_en=0;
         dist_sqr_reset=1;
         
-        add_all_en=0;
-        add_all_reset=1;
+//        add_all_en=0;
+//        add_all_reset=1;
         add_all_in_1=0;
+        add_all_in_2=0;
+        
+        adder1_a_tvalid = 0;
+        adder1_b_tvalid = 0;
+        adder1_result_tready = 0;
         
         j=DIGIT_DIM; 
         
@@ -136,33 +161,39 @@ always @(posedge clk or posedge reset) begin
                 
         end else if (add_all_init && !wait_en) begin
             add_all_in_2 = dist_sqr_out[j-1 -:DIGIT_DIM];
-            add_all_en = 1;
-            add_all_reset = 0;
+//            add_all_en = 1;
+//            add_all_reset = 0;
+            adder1_a_tvalid = 1;
+            adder1_b_tvalid = 1;
+            adder1_result_tready = 1;
             wait_en = 1;
             
-        end else if (add_all_init && add_all_done) begin
-            add_all_en = 0;
+        end else if (add_all_init && adder1_result_tvalid) begin // add_all_done
+            
             add_all_in_1 = add_all_out;
             j = j + DIGIT_DIM;
-            add_all_reset = 1;
+            adder1_a_tvalid = 0;
+            adder1_b_tvalid = 0;
+            adder1_result_tready = 0;
+//            add_all_en = 0;
+//            add_all_reset = 1;
             
             if (j > DIGIT_DIM*DIM) begin
                 add_all_init = 0;
                 
+                square_root_a_tdata = add_all_out;
                 square_root_a_tvalid = 1;
                 square_root_r_tready = 1;
-                square_root_a_tdata = add_all_out;
                 
             end else 
                 wait_en = 0;
                 
-        end else if (square_root_r_tvalid && square_root_a_tvalid && square_root_r_tready) begin
-            
+        end else if (square_root_r_tvalid && square_root_a_tvalid) begin
+            out = square_root_r_tdata;
             square_root_a_tvalid = 0;
             square_root_r_tready = 0;
-            
             done = 1;
-            out = square_root_r_tdata;
+            
         end
     end
 end

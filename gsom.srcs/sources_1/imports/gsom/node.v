@@ -224,20 +224,24 @@ always @(posedge clk or posedge reset) begin
             // activate initial 4 nodes
             1 : begin
                 if (row==4 && col==4) begin
-                    weight=neighbor_weights[DIGIT_DIM*DIM*1-1 -:DIGIT_DIM*DIM];
-                    is_active=1;
+                    weight = neighbor_weights[DIGIT_DIM*DIM*1-1 -:DIGIT_DIM*DIM];
+                    is_active = 1;
+                    $display("row==4 && col==4 active with weight %h", weight);
 
                 end else if (row==4 && col==5) begin
-                    weight=neighbor_weights[DIGIT_DIM*DIM*2-1 -:DIGIT_DIM*DIM];
-                    is_active=1;
+                    weight = neighbor_weights[DIGIT_DIM*DIM*2-1 -:DIGIT_DIM*DIM];
+                    is_active = 1;
+                    $display("row==4 && col==5 active with weight %h", weight);
 
                 end else if (row==5 && col==4) begin
-                    weight=neighbor_weights[DIGIT_DIM*DIM*3-1 -:DIGIT_DIM*DIM];
-                    is_active=1;
+                    weight = neighbor_weights[DIGIT_DIM*DIM*3-1 -:DIGIT_DIM*DIM];
+                    is_active = 1;
+                    $display("row==5 && col==4 active with weight %h", weight);
 
                 end else if (row==5 && col==5) begin
-                    weight=neighbor_weights[DIGIT_DIM*DIM*4-1 -:DIGIT_DIM*DIM];
-                    is_active=1;
+                    weight = neighbor_weights[DIGIT_DIM*DIM*4-1 -:DIGIT_DIM*DIM];
+                    is_active = 1;
+                    $display("row==5 && col==5 active with weight %h", weight);
 
                 end
                 controls_out_signals[0] = 1;
@@ -250,18 +254,22 @@ always @(posedge clk or posedge reset) begin
                     if (winner_row+1 == row && winner_col == col) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*1-1 -:DIGIT_DIM*DIM];
                         is_active=1;
+                        $display("row==%d && col==%d active with weight %h", row, col, weight);
     
                     end else if (winner_row == row && winner_col+1 == col) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*2-1 -:DIGIT_DIM*DIM];
                         is_active=1;
+                        $display("row==%d && col==%d active with weight %h", row, col, weight);
     
                     end else if (winner_row-1 == row && winner_col == col) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*3-1 -:DIGIT_DIM*DIM];
                         is_active=1;
+                        $display("row==%d && col==%d active with weight %h", row, col, weight);
     
                     end else if (winner_row == row && winner_col-1 == col) begin
                         weight=neighbor_weights[DIGIT_DIM*DIM*4-1 -:DIGIT_DIM*DIM];
                         is_active=1;
+                        $display("row==%d && col==%d active with weight %h", row, col, weight);
     
                     end
                 end
@@ -275,6 +283,7 @@ always @(posedge clk or posedge reset) begin
                     distance_en=1;
                     distance_reset=0;
                     if (distance_done) begin
+                        $display("row %d col %d distance %h", row, col, distance);
                         distance_en=0;
                         distance_reset=1;
                         controls_out_signals[2] = 1;
@@ -313,11 +322,17 @@ always @(posedge clk or posedge reset) begin
                         error_adder_b_tvalid = 1;
                         error_adder_result_tready = 1;
                             
-                        if (update_done=={DIM{1'b1}} && error_adder_result_tvalid) begin // error_adder_is_done
+                        if (update_done == {DIM{1'b1}} 
+                            && error_adder_result_tvalid
+                            && error_adder_result_tready) begin // error_adder_is_done
                             update_en=0;
                             update_reset=1;
                             
+                            weight = update_out;
+                            
                             error = error_adder_out;
+                            $display("learning rate %h", update_learning_rate);
+                            $display("winner row %d col %d weight %h error &h", row, col, weight, error);
     
 //                            error_adder_en = 0;
 //                            error_adder_reset = 1;
@@ -342,6 +357,9 @@ always @(posedge clk or posedge reset) begin
                         if (update_done=={DIM{1'b1}}) begin
                             update_en=0;
                             update_reset=1;
+                            weight = update_out;
+                            $display("nb_radius %d", nb_radius);
+                            $display("neighbour row %d col %d weight %h error &h", row, col, weight, error);
     
                             controls_out_signals[3] = 1;
                         end
@@ -357,8 +375,8 @@ always @(posedge clk or posedge reset) begin
             16 : begin
 
                 if (winner_row == row && winner_col == col && !controls_out_signals[4]) begin
-                    
-                    if (min_comparator_result_tvalid) begin // comp_is_done
+                    $display("GT %h", GT);
+                    if (min_comparator_result_tvalid && min_comparator_result_tready) begin // comp_is_done
                         if (comp_out[0] == 1) begin
                             error_overflowed_signal = 1;
                             
@@ -401,10 +419,10 @@ always @(posedge clk or posedge reset) begin
                         update_error_a_tvalid = 1;
                         update_error_b_tvalid = 1;
                         update_error_result_tready = 1;
-                        
-                        if (update_error_result_tvalid) begin // update_error_is_done
+                        $display("FD %h", FD);
+                        if (update_error_result_tvalid && update_error_result_tready) begin // update_error_is_done
                             error = update_error_out;
-                            
+                            $display("spread row %d col %d error &h", row, col, error);
 //                            update_error_en = 0;
 //                            update_error_reset = 1;
                             update_error_a_tvalid = 0;
