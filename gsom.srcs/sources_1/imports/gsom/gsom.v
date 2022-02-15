@@ -362,111 +362,121 @@ gsom_learning_rate lr(
 ///////////////////////////////////////////**************************node_count_adder**************************/////////////////////////////////////////////////////
 reg [DIGIT_DIM-1:0] no_of_new_node;
 
-reg node_count_adder_en = 0;
-reg node_count_adder_reset = 0;
-wire node_count_adder_is_done;
+//reg node_count_adder_en = 0;
+//reg node_count_adder_reset = 0;
+//wire node_count_adder_is_done;
 reg [DIGIT_DIM-1:0] nca_count = 0;
 wire [DIGIT_DIM-1:0] nca_num_out;
 
 
-fpa_adder fpa_node_count_adder(
-    .clk(clk),
-    .reset(node_count_adder_reset),
-    .en(node_count_adder_en),
-    .num1(node_count_ieee754),
-    .num2(nca_count),
-    .num_out(nca_num_out),
-    .is_done(node_count_adder_is_done)        
+//fpa_adder fpa_node_count_adder(
+//    .clk(clk),
+//    .reset(node_count_adder_reset),
+//    .en(node_count_adder_en),
+//    .num1(node_count_ieee754),
+//    .num2(nca_count),
+//    .num_out(nca_num_out),
+//    .is_done(node_count_adder_is_done)        
+//);
+
+reg node_count_adder_a_tvalid = 0;
+wire node_count_adder_a_tready;
+reg node_count_adder_b_tvalid = 0;
+wire node_count_adder_b_tready;
+wire node_count_adder_result_tvalid;
+reg node_count_adder_result_tready = 0;
+
+adder node_count_adder (
+  .aclk(clk),                                  
+  .s_axis_a_tvalid(node_count_adder_a_tvalid),            
+  .s_axis_a_tready(node_count_adder_a_tready),            
+  .s_axis_a_tdata(node_count_ieee754),              
+  .s_axis_b_tvalid(node_count_adder_b_tvalid),            
+  .s_axis_b_tready(node_count_adder_b_tready),            
+  .s_axis_b_tdata(nca_count),              
+  .m_axis_result_tvalid(node_count_adder_result_tvalid),  
+  .m_axis_result_tready(node_count_adder_result_tready),  
+  .m_axis_result_tdata(nca_num_out)    
 );
 
-//reg node_count_ieee754_valid = 0;
-//wire node_count_ieee754_ready;
-
-//reg [DIGIT_DIM-1:0] nca_count;
-//reg nca_count_valid = 0;
-//wire nca_count_ready;
-
-//wire [DIGIT_DIM-1:0] nca_num_out;
-//wire nca_num_out_valid;
-//reg nca_num_out_ready = 0;
-
-
-//adder fpa_node_count_adder(
-//    .aclk(clk),
-//    .s_axis_a_tvalid(node_count_ieee754_valid),
-//    .s_axis_a_tready(node_count_ieee754_ready),
-//    .s_axis_a_tdata(node_count_ieee754),
-//    .s_axis_b_tvalid(nca_count_valid),
-//    .s_axis_b_tready(nca_count_ready),
-//    .s_axis_b_tdata(nca_count),
-//    .m_axis_result_tvalid(nca_num_out_valid),
-//    .m_axis_result_tready(nca_num_out_ready),
-//    .m_axis_result_tdata(nca_num_out)
-//);
 
 ///////////////////////////////////////////**************************get_min**************************/////////////////////////////////////////////////////
 reg [DIGIT_DIM-1:0] comp_in_1=0;
 reg [DIGIT_DIM-1:0] comp_in_2=0;
-wire [1:0] comp_out;
-wire comp_done;
-reg comp_en=0;
-reg comp_reset=0;
+wire [7:0] comp_out; //wire [1:0] comp_out;
+//wire comp_done;
+//reg comp_en=0;
+//reg comp_reset=0;
 
-fpa_comparator get_min(
-    .clk(clk),
-    .en(comp_en),
-    .reset(comp_reset),
-    .num1(comp_in_1),
-    .num2(comp_in_2),
-    .num_out(comp_out),
-    .is_done(comp_done)
+//fpa_comparator get_min(
+//    .clk(clk),
+//    .en(comp_en),
+//    .reset(comp_reset),
+//    .num1(comp_in_1),
+//    .num2(comp_in_2),
+//    .num_out(comp_out),
+//    .is_done(comp_done)
+//);
+
+reg min_comparator_a_tvalid = 0;
+wire min_comparator_a_tready;
+reg min_comparator_b_tvalid = 0;
+wire min_comparator_b_tready;
+wire min_comparator_result_tvalid;
+reg min_comparator_result_tready = 0;
+
+
+less_than_comparator min_comparator (
+  .aclk(clk),                                  
+  .s_axis_a_tvalid(min_comparator_a_tvalid),            
+  .s_axis_a_tready(min_comparator_a_tready),            
+  .s_axis_a_tdata(comp_in_1),              
+  .s_axis_b_tvalid(min_comparator_b_tvalid),      
+  .s_axis_b_tready(min_comparator_b_tready),        
+  .s_axis_b_tdata(comp_in_2),             
+  .m_axis_result_tvalid(min_comparator_result_tvalid),  
+  .m_axis_result_tready(min_comparator_result_tready),  
+  .m_axis_result_tdata(comp_out)   
 );
 
 ///////////////////////////////////////////**************************multiplier**************************/////////////////////////////////////////////////////
-reg multi_en = 0;
-reg multi_reset = 0;
-wire multi_is_done;
+//reg multi_en = 0;
+//reg multi_reset = 0;
+//wire multi_is_done;
 reg [DIGIT_DIM-1:0] multi_num1;
 reg [DIGIT_DIM-1:0] multi_num2;
 wire [DIGIT_DIM-1:0] multi_num_out;
 
-fpa_multiplier multiplier(
-    .clk(clk),
-    .en(multi_en),
-    .reset(multi_reset),
-    .is_done(multi_is_done),
-    .num1(multi_num1),
-    .num2(multi_num2),
-    .num_out(multi_num_out)
+//fpa_multiplier multiplier(
+//    .clk(clk),
+//    .en(multi_en),
+//    .reset(multi_reset),
+//    .is_done(multi_is_done),
+//    .num1(multi_num1),
+//    .num2(multi_num2),
+//    .num_out(multi_num_out)
+//);
+
+reg multiplier1_a_tvalid = 0;
+wire multiplier1_a_tready;
+reg multiplier1_b_tvalid = 0;
+wire multiplier1_b_tready;
+wire multiplier1_result_tvalid;
+reg multiplier1_result_tready = 0;
+
+multiplier multiplier1 (
+  .aclk(clk),                                  
+  .s_axis_a_tvalid(multiplier1_a_tvalid),           
+  .s_axis_a_tready(multiplier1_a_tready),   
+  .s_axis_a_tdata(multi_num1),             
+  .s_axis_b_tvalid(multiplier1_b_tvalid),            
+  .s_axis_b_tready(multiplier1_b_tready),            
+  .s_axis_b_tdata(multi_num2),            
+  .m_axis_result_tvalid(multiplier1_result_tvalid),  
+  .m_axis_result_tready(multiplier1_result_tready), 
+  .m_axis_result_tdata(multi_num_out)  
 );
 
-
-//reg [DIGIT_DIM-1:0] mul_num1;
-//reg mul_num1_valid = 0;
-//wire mul_num1_ready;
-
-//reg [DIGIT_DIM-1:0] mul_num2;
-//reg mul_num2_valid = 0;
-//wire mul_num2_ready;
-
-//wire [DIGIT_DIM-1:0] mul_num_out;
-//reg mul_num_out_ready = 0;
-//wire mul_num_out_valid;
-
-//multiplier fpa_multiplier(
-//    .aclk(clk),
-//    .s_axis_a_tvalid(mul_num1_valid),
-//    .s_axis_a_tready(mul_num1_ready),
-//    .s_axis_a_tdata(mul_num1),
-    
-//    .s_axis_b_tvalid(mul_num2_valid),
-//    .s_axis_b_tready(mul_num2_ready),
-//    .s_axis_b_tdata(mul_num2),
-    
-//    .m_axis_result_tvalid(mul_num_out_valid),
-//    .m_axis_result_tready(mul_num_out_ready),
-//    .m_axis_result_tdata(mul_num_out)
-//);
 ///////////////////////////////////////////**************************check_is_in_map**************************/////////////////////////////////////////////////////
 function is_active_in_map;
     input [LOG2_ROWS-1:0] coord_i;
@@ -514,14 +524,22 @@ always @(posedge clk) begin
         multi_num1 = learning_rate;
         multi_num2 = smooth_learning_factor;
         
-        multi_en = 1;
-        multi_reset = 0;
+//        multi_en = 1;
+//        multi_reset = 0;
         
-        if (multi_is_done) begin
+        multiplier1_a_tvalid = 1;
+        multiplier1_b_tvalid = 1;
+        multiplier1_result_tready = 1;
+        
+        if (multiplier1_result_tvalid) begin // multi_is_done
             current_learning_rate = multi_num_out;
             
-            multi_en = 0;
-            multi_reset = 1;
+//            multi_en = 0;
+//            multi_reset = 1;
+
+            multiplier1_a_tvalid = 0;
+            multiplier1_b_tvalid = 0;
+            multiplier1_result_tready = 0;
             
             iteration = -1;
             next_iteration_en = 1;
@@ -654,16 +672,19 @@ always @(posedge clk) begin
     end else if (min_distance_en) begin
         if (is_active_in_map(matrix_i, matrix_j)) begin
             
-            comp_in_1 = min_distance;
-            comp_in_2 = distances[matrix_i][matrix_j];
-            comp_reset = 0;
-            comp_en = 1;
+            comp_in_1 = distances[matrix_i][matrix_j];
+            comp_in_2 = min_distance;
+//            comp_reset = 0;
+//            comp_en = 1;
+            min_comparator_a_tvalid = 1;
+            min_comparator_b_tvalid = 1;
+            min_comparator_result_tready = 1;
             
-            if (comp_done) begin    
+            if (min_comparator_result_tvalid) begin    
                 $display("%d %d", matrix_i, matrix_j);
                 $display("%h ... %h = %d", comp_in_1, comp_in_2, comp_out);
                 
-                if (comp_out==1) begin
+                if (comp_out[0] == 1) begin
                     bmu[1] = matrix_i;
                     bmu[0] = matrix_j;
                     min_distance = distances[matrix_i][matrix_j];
@@ -679,8 +700,11 @@ always @(posedge clk) begin
                     end
                 end
                 
-                comp_en = 0;
-                comp_reset = 1;
+//                comp_en = 0;
+//                comp_reset = 1;
+                min_comparator_a_tvalid = 0;
+                min_comparator_b_tvalid = 0;
+                min_comparator_result_tready = 0;
                 
             end
         end else begin
@@ -766,19 +790,25 @@ always @(posedge clk) begin
         else if (no_of_new_node==3)
             nca_count = 32'h40400000;
             
-        node_count_adder_en = 1;
-        node_count_adder_reset = 0;
+//        node_count_adder_en = 1;
+//        node_count_adder_reset = 0;
+        node_count_adder_a_tvalid = 1;
+        node_count_adder_b_tvalid = 1;
+        node_count_adder_result_tready = 1;
         
     end else if (controls_in[1]) begin
         $display("controls_in[1]");
-        if (controls_out[1] == { MAX_ROWS*MAX_COLS {1'b1} } && node_count_adder_is_done) begin
+        if (controls_out[1] == { MAX_ROWS*MAX_COLS {1'b1} } && node_count_adder_result_tvalid) begin // node_count_adder_is_done
             controls_in[1] = 0;
             next_t1_en = 1; 
             
             node_count_ieee754 = nca_num_out;
             
-            node_count_adder_en = 0;
-            node_count_adder_reset = 1;
+//            node_count_adder_en = 0;
+//            node_count_adder_reset = 1;
+            node_count_adder_a_tvalid = 0;
+            node_count_adder_b_tvalid = 0;
+            node_count_adder_result_tready = 0;
             $display("grow nodes");
         end
     end
