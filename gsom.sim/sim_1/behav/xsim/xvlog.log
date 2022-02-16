@@ -669,6 +669,3 @@ INFO: [VRFC 10-2263] Analyzing Verilog file "/home/aari/Projects/Vivado/gsom/gso
 INFO: [VRFC 10-311] analyzing module update_bmu
 INFO: [VRFC 10-2263] Analyzing Verilog file "/home/aari/Projects/Vivado/gsom/gsom.srcs/sim_1/imports/new/gsom_tb.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module gsom_tb
-INFO: [VRFC 10-2263] Analyzing Verilog file "/home/aari/Projects/Vivado/gsom/gsom.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module glbl
-WARNING: [VRFC 10-3609] overwriting previous definition of module 'glbl' [/home/aari/Projects/Vivado/gsom/gsom.sim/sim_1/behav/xsim/glbl.v:6]
